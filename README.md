@@ -41,17 +41,19 @@ C:\Users\smhrd1\project_kozam\
 │   ├── models/         # Pre-trained ML/DL models
 │   ├── routers/        # API endpoints for predictions
 │   ├── services/       # Core AI logic and processing
-│   ├── main.py         # AI service entry point
-│   └── train.py        # Model training scripts
+│   └── main.py         # AI service entry point
 ├── client/             # React Frontend (Vite)
 │   ├── src/
+│   │   ├── api/        # API client modules
 │   │   ├── components/ # Reusable UI components
+│   │   ├── hooks/      # Custom hooks
 │   │   ├── pages/      # Application views
-│   │   └── api/        # API client modules
+│   │   └── utils/      # Utility functions
 │   └── package.json
 ├── server/             # Node.js Backend (Express)
 │   ├── src/
 │   │   ├── controllers/# Request handlers
+│   │   ├── middlewares/# Authentication middleware
 │   │   ├── models/     # Database models
 │   │   ├── routes/     # API routes
 │   │   └── app.js      # Server entry point
