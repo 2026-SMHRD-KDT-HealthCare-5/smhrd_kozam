@@ -37,3 +37,10 @@ out/
 
 # Database (로컬 데이터베이스 로그 등)
 *.log
+
+# Client-specific settings
+dist-ssr
+*.local
+*.ntvs*
+*.njsproj
+*.sln
