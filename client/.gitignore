@@ -1,0 +1,10 @@
+# Client-specific build outputs
+dist-ssr
+
+# Local env files
+*.local
+
+# Client-specific editor files
+*.ntvs*
+*.njsproj
+*.sln

@@ -1,0 +1,1 @@
+# @app.post("/predict") 엔드포인트
