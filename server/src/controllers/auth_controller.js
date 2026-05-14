@@ -1,4 +1,4 @@
-const authService = require("../services/auth.service");
+const authService = require("../services/auth_service");
 
 exports.login = async (req, res) => {
   try {
@@ -6,7 +6,7 @@ exports.login = async (req, res) => {
     const { loginId, password } = req.body;
 
     // service 호출
-    const user = await authService.login(loginId, password);
+    const user = await authService.login({ loginId, password });
 
     // 응답 반환
     res.status(200).json({

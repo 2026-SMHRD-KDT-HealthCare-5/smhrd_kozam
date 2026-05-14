@@ -1,4 +1,4 @@
-exports.login = async (loginId, password) => {
+exports.login = async ({ loginId, password }) => {
   // TODO: DB 조회 후 로그인 처리 (JWT 적용 고민)
 
   // 임시 유저 데이터 (DB 대신)
