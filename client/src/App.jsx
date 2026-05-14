@@ -18,10 +18,7 @@ function App() {
             <Routes>
               <Route element={<AppWrapper />}>
                 <Route element={<ProtectedRoute />}>
-                  <Route
-                    path="/"
-                    element={<SnoreMonitoring></SnoreMonitoring>}
-                  />
+                  <Route path="/" element={<SnoreMonitoring />} />
                 </Route>
                 <Route path="/login" element={<Login />} />
               </Route>
