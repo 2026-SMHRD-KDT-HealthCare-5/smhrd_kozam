@@ -1,7 +1,9 @@
-const Login = () => {
-  return (
-    <div>Login</div>
-  )
-}
+import { useContext } from "react";
+import AuthContext from "../../contexts/AuthContext";
 
-export default Login
+const Login = () => {
+  const { setIsLoggedIn } = useContext(AuthContext);
+  return <div>Login</div>;
+};
+
+export default Login;
