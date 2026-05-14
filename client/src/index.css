@@ -56,5 +56,6 @@ html,
 body,
 #root {
   width: 100%;
+  min-width: 520px;
   min-height: 100%;
 }

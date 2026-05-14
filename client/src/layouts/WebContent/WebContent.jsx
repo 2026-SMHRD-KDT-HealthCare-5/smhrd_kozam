@@ -6,7 +6,7 @@ const WebContent = () => {
       WebContentWrapper
       <div className="web-content-inner">
         <div className="web-content-title">소개문구</div>
-        <div className="web-content-image">캐릭터</div>
+        <div className="web-content-image" />
       </div>
     </div>
   );

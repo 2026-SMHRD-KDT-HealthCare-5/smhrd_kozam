@@ -1,5 +1,5 @@
 .app-inner {
   border: 1px solid;
-  width: 520px;
+  min-width: 520px;
   height: 100%;
 }
