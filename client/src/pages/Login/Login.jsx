@@ -1,8 +1,8 @@
-import { useContext, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../api/auth";
-import AuthContext from "../../contexts/AuthContext";
 import styles from "./Login.module.css";
+import { useAuth } from "../../hooks/useAuth";
 
 function MoonIcon() {
   return (
@@ -23,12 +23,14 @@ function MoonIcon() {
 }
 
 const Login = () => {
+  // TODO: 비제어 컴포넌트로 변경
   const [inputId, setInputId] = useState("");
   const [inputPw, setInputPw] = useState("");
 
-  const { setIsLoggedIn } = useContext(AuthContext);
+  const { setIsLoggedIn } = useAuth();
   const navigate = useNavigate();
 
+  // TODO: preventDefault 제거 후 submit 이벤트로 로그인 처리
   const handleSubmit = async (e) => {
     e.preventDefault();
 
