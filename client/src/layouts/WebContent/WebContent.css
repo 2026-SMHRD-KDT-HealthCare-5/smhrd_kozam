@@ -1,0 +1,33 @@
+.web-content-wrapper {
+  border: 1px solid;
+  width: 520px;
+  height: 100%;
+}
+
+.web-content-inner {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+}
+
+.web-content-title {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+}
+
+.web-content-image {
+  width: 640px;
+  height: 360px;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background-image: url(../../assets/images/Panda_main.png);
+}
+
+@media (max-width: 1040px) {
+  .web-content-wrapper {
+    display: none;
+  }
+}
