@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState } from "react";
 import ProtectedRoute from "./router/ProtectedRoute";
 import WebContent from "./layouts/WebContent/WebContent";
 import AppWrapper from "./layouts/AppWrapper/AppWrapper";
