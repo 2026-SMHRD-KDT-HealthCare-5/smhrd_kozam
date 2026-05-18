@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../../api/auth";
-import AuthContext from "../../contexts/AuthContext";
+import { login } from "@/api/auth";
+import AuthContext from "@/contexts/AuthContext";
 import styles from "./Login.module.css";
 
 function MoonIcon() {
