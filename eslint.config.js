@@ -54,6 +54,7 @@ export default [
 
       "no-unused-vars": "warn",
       "no-console": "warn",
+      "react/prop-types": "off",
     },
   },
 
