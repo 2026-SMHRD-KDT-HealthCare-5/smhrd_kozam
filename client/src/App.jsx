@@ -1,10 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import ProtectedRoute from "./router/ProtectedRoute";
-import WebContent from "./layouts/WebContent/WebContent";
-import AppWrapper from "./layouts/AppWrapper/AppWrapper";
-import SnoreMonitoring from "./pages/SnoreMonitoring/SnoreMonitoring";
-import Login from "./pages/Login/Login";
-import "./App.css";
+import ProtectedRoute from "@/router/ProtectedRoute";
+import WebContent from "@/layouts/WebContent/WebContent";
+import AppWrapper from "@/layouts/AppWrapper/AppWrapper";
+import SnoreMonitoring from "@/pages/SnoreMonitoring/SnoreMonitoring";
+import Login from "@/pages/Login/Login";
+import "@/App.css";
 
 function App() {
   return (
