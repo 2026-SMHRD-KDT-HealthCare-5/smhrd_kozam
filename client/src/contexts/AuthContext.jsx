@@ -1,17 +1,12 @@
-import { createContext, useState } from "react";
+import { createContext } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    () => !!localStorage.getItem("userId"),
-  );
+  const auth = useAuth();
 
-  return (
-    <AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 };
 
 export default AuthContext;
