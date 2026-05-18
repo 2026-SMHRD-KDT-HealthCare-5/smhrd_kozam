@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "@/api/auth";
 import { useAuth } from "@/hooks/useAuth";
 import Logo from "@components/Logo";
 import styles from "./Login.module.css";
@@ -10,20 +9,14 @@ const Login = () => {
   const [inputId, setInputId] = useState("");
   const [inputPw, setInputPw] = useState("");
 
-  const { setIsLoggedIn } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   // TODO: preventDefault 제거 후 submit 이벤트로 로그인 처리
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    try {
-      await login({ loginId: inputId, password: inputPw });
-      setIsLoggedIn(true);
-      navigate("/");
-    } catch (error) {
-      console.error("Login failed:", error);
-    }
+    await login({ loginId: inputId, password: inputPw });
+    navigate("/");
   };
 
   return (
