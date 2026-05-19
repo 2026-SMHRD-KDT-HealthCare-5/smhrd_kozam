@@ -5,6 +5,7 @@ import AppWrapper from "@/layouts/AppWrapper/AppWrapper";
 import SnoreMonitoring from "@/pages/SnoreMonitoring/SnoreMonitoring";
 import Login from "@/pages/Login/Login";
 import "@/App.css";
+import AppMainLayout from "./layouts/AppMainLayout/AppMainLayout";
 
 function App() {
   return (
@@ -17,9 +18,11 @@ function App() {
               <Route path="/login" element={<Login />} />
 
               <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<SnoreMonitoring />} />
-                {/* History */}
-                {/* Mypage */}
+                <Route element={<AppMainLayout />}>
+                  <Route path="/" element={<SnoreMonitoring />} />
+                  {/* History */}
+                  {/* Mypage */}
+                </Route>
               </Route>
             </Route>
           </Routes>
