@@ -2,9 +2,11 @@ import { BarChart3, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import headerLogo from "@/assets/images/headerLogo.png";
 import "./Header.css";
+import { useAuth } from "client/src/hooks/useAuth";
 
 const Header = () => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   return (
     <header className="app-header">
@@ -20,7 +22,10 @@ const Header = () => {
         <button
           className="icon-btn"
           // onClick={() => navigate("/history")}
-          onClick={() => {}}
+          onClick={() => {
+            logout();
+            navigate("/login")
+          }}
           aria-label="히스토리로 이동"
         >
           <BarChart3 />
