@@ -15,8 +15,13 @@ const Login = () => {
   // TODO: preventDefault 제거 후 submit 이벤트로 로그인 처리
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login({ loginId: inputId, password: inputPw });
-    navigate("/");
+    try {
+      await login({ loginId: inputId, password: inputPw });
+      navigate("/");
+    } catch (error) {
+      // TODO: 로그인 실패 시 사용자에게 피드백 제공 (예: ID 또는 비밀번호 오류)
+      console.error("Login failed:", error);
+    }
   };
 
   return (
