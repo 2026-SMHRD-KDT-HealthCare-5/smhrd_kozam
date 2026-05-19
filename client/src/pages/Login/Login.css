@@ -1,7 +1,7 @@
 .login-page {
   position: relative;
   width: min(520px);
-  min-height: 100vh;
+  min-height: 100%;
   margin: 0 auto;
   overflow: hidden;
   background-image: url(@/assets/images/loginBack.png);
