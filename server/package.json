@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "lint": "eslint ."
   },
   "keywords": [],
   "author": "",
@@ -17,6 +18,7 @@
     "express": "^5.2.1",
     "form-data": "^4.0.5",
     "multer": "^2.1.1",
-    "mysql2": "^3.22.3"
+    "mysql2": "^3.22.3",
+    "dotenv": "^17.4.2"
   }
 }

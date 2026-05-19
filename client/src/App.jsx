@@ -1,12 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState } from "react";
-import ProtectedRoute from "./router/ProtectedRoute";
-import WebContent from "./layouts/WebContent/WebContent";
-import AppWrapper from "./layouts/AppWrapper/AppWrapper";
-import SnoreMonitoring from "./pages/SnoreMonitoring/SnoreMonitoring";
-import Login from "./pages/Login/Login";
-import "./App.css";
-import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "@/router/ProtectedRoute";
+import WebContent from "@/layouts/WebContent/WebContent";
+import AppWrapper from "@/layouts/AppWrapper/AppWrapper";
+import SnoreMonitoring from "@/pages/SnoreMonitoring/SnoreMonitoring";
+import Login from "@/pages/Login/Login";
+import "@/App.css";
 
 function App() {
   return (
@@ -14,16 +12,17 @@ function App() {
       <div className="app-content">
         <WebContent />
         <BrowserRouter>
-          <AuthProvider>
-            <Routes>
-              <Route element={<AppWrapper />}>
-                <Route element={<ProtectedRoute />}>
-                  <Route path="/" element={<SnoreMonitoring />} />
-                </Route>
-                <Route path="/login" element={<Login />} />
+          <Routes>
+            <Route element={<AppWrapper />}>
+              <Route path="/login" element={<Login />} />
+
+              <Route element={<ProtectedRoute />}>
+                <Route path="/" element={<SnoreMonitoring />} />
+                {/* History */}
+                {/* Mypage */}
               </Route>
-            </Routes>
-          </AuthProvider>
+            </Route>
+          </Routes>
         </BrowserRouter>
       </div>
     </div>

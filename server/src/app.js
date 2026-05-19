@@ -2,12 +2,16 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const authRoutes = require("./routes/auth_routes");
+<<<<<<< HEAD
 const aiRoutes = require("./routes/ai_routes");
+=======
+require("dotenv").config();
+>>>>>>> dev
 
 // 1. CORS 설정 - 보안때문에 막힐수있어서 최상단에 위치
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: `http://localhost:${process.env.CORS_PORT}`,
   }),
 );
 
