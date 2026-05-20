@@ -46,16 +46,19 @@ const UserInfo = () => {
           label="닉네임"
           icon={<User />}
           value={user?.nick || "KOZAM"}
+          type="text"
         />
         <ProfileInput
           label="이메일"
           icon={<Mail />}
           value={user?.email || "kozam@sample.com"}
+          type="text"
         />
         <ProfileInput
           label="연락처"
           icon={<Phone />}
           value={user?.phone || "010-1234-5678"}
+          type="text"
         />
 
         <div className="two-cols">
@@ -97,13 +100,13 @@ const UserInfo = () => {
   );
 };
 
-const ProfileInput = ({ label, icon, value, muted, action }) => {
+const ProfileInput = ({ label, icon, value, muted, action, type }) => {
   return (
     <label className="profile-input">
       <span>{label}</span>
       <div>
         {icon}
-        <input value={value} readOnly className={muted ? "muted" : ""} />
+        <input type={type} value={value} className={muted ? "muted" : ""} />
         {action}
       </div>
     </label>
