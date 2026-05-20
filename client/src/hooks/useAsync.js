@@ -32,7 +32,13 @@ export function useAsync(asyncFn, options = {}) {
   const isMountedRef = useRef(true);
 
   // 컴포넌트 언마운트 시 isMountedRef를 false로 설정하여 상태 업데이트 방지
-  useEffect(() => () => (isMountedRef.current = false), []);
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const execute = useCallback(
     async (...args) => {

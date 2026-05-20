@@ -171,7 +171,7 @@
   flex: 0 0 auto;
 }
 
-.profile-input input {
+.profile-input {
   width: 100%;
   border: 0;
   outline: 0;
@@ -221,8 +221,9 @@
 
 .footer-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 16px;
+  margin-top: 24px;
 }
 
 .footer-actions button {

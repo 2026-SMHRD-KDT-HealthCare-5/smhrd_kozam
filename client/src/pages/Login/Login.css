@@ -8,17 +8,31 @@
   background-image: url(@/assets/images/loginBack.png);
   background-size: cover;
   background-position: center;
-
   display: flex;
   flex-direction: column;
   justify-content: center;
   padding: clamp(24px, 5vh, 56px) 28px;
 }
 
+/* .background-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+} */
+
 .main-logo {
   width: clamp(180px, 45vw, 300px);
   margin-bottom: 12px;
 }
+
+/* .login-hero,
+.login-form {
+  position: relative;
+  z-index: 1;
+} */
 
 .login-hero {
   min-height: auto;
