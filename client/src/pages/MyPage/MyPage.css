@@ -127,7 +127,7 @@
 
 .mini-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
   padding: 12px;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -207,6 +207,7 @@
 
 .posture-row .active {
   background: linear-gradient(135deg, #9b36ea, #6222c0);
+  font-weight: 800;
 }
 
 .footer-actions button {
@@ -224,10 +225,13 @@
 
 .footer-actions button {
   min-height: 60px;
-  font-weight: 800;
   font-size: 18px;
 }
 
-.footer-actions {
-  grid-template-columns: 1fr 1fr;
+.footer-actions button:last-child {
+  font-weight: 800;
+}
+
+button {
+  color: white;
 }
