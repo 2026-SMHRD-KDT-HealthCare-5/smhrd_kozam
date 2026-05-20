@@ -1,14 +1,18 @@
 .web-content-wrapper {
+  width: min(520px, 100%);
+  flex: 1 1 520px;
+  min-width: 0;
   border: 1px solid;
-  width: 520px;
+  /* width: 520px; */
   height: 100%;
   color: transparent;
+  overflow: hidden;
 }
 
 .web-content-inner {
   position: relative;
   width: 100%;
-  /* height: 100vh; */
+  height: 100vh; 
   min-height: 100dvh;
 }
 
@@ -19,7 +23,9 @@
 }
 
 .web-content-image {
-  width: 640px;
+  /* width: 640px; */
+  width: 100%;
+  max-width: 640px;
   height: 360px;
   position: absolute;
   bottom: 0;
