@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { User, Lock } from "lucide-react";
 import InputField from "@components/InputField/InputField";
 import mainLogo from "@/assets/images/mainLogo.png";
+// import bgVideo from "@/assets/images/loginBack.mp4";
 import "./Login.css";
 
 const Login = () => {
@@ -28,6 +29,9 @@ const Login = () => {
 
   return (
     <main className="login-page">
+      {/* <video autoPlay muted loop playsInline className="background-video">
+        <source src={bgVideo} type="video/mp4" />
+      </video> */}
       <section className="login-hero">
         <img className="main-logo" src={mainLogo} alt="Kozam" />
         <p>
