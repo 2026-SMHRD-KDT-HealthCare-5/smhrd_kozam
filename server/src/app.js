@@ -3,47 +3,81 @@ const app = express();
 const cors = require("cors");
 const authRoutes = require("./routes/auth_routes");
 const aiRoutes = require("./routes/ai_routes");
+const swaggerUi = require("swagger-ui-express");
+const swaggerJsdoc = require("swagger-jsdoc");
 require("dotenv").config();
 
-// 1. CORS 설정 - 보안때문에 막힐수있어서 최상단에 위치
+// ==========================================
+// 0. Swagger (스웨거) 설정 정의
+// ==========================================
+const swaggerOptions = {
+  swaggerDefinition: {
+    openapi: "3.0.0",
+    info: {
+      title: "Node.js API 문서",
+      version: "1.0.0",
+      description: "인증(Auth) 및 AI 기능을 제공하는 API 문서입니다.",
+    },
+    servers: [
+      {
+        url: `http://localhost:${process.env.PORT || 3000}`,
+      },
+    ],
+  },
+  // src 폴더 내부의 파일들을 스캔합니다.
+  apis: ["./src/app.js", "./src/routes/*.js"],
+};
+
+const swaggerDocs = swaggerJsdoc(swaggerOptions);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+// 1. CORS 설정
 app.use(
   cors({
     origin: `http://localhost:${process.env.CORS_PORT}`,
   }),
 );
 
-//2. json 파싱 (# 로깅 미들웨어보다 위에 있어야 req.body를 읽음)
+// 2. json 파싱
 app.use(express.json());
 
-//3. 로깅 미들웨어
+// 3. 로깅 미들웨어
 app.use((req, res, next) => {
-  //  요청의 기본 정보 기록
   console.log(
     `\n[${new Date().toLocaleTimeString()}] 요청 도착 : ${req.method} ${req.url}`,
   );
-  // req.body가 존재할 때만 검사하도록 수정 (에러 해결 핵심)
   if (req.body && Object.keys(req.body).length > 0) {
     console.log("DB 확인 :", req.body);
   }
-  // 다음단계로 넘어가기
   next();
 });
 
+//* prettier-ignore */
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: 서버 작동 여부 확인
+ *     description: 백엔드 서버가 정상적으로 켜져 있는지 확인하는 루트 경로입니다.
+ *     responses:
+ *       200:
+ *         description: 성공적으로 서버가 작동 중임
+ */
 // 4. 서버 확인용 루트
 app.get("/", (req, res) => {
   res.send("백엔드 서버가 정상적으로 작동 중!!!!");
 });
-// 5 . 경로 마운트 설정 - 인증경로 중심역할
+
+// 5. 경로 마운트 설정
 app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
 
-// 6. 에러 처리 미들웨어 (모든 에러를 여기서 처리)
+// 6. 에러 처리 미들웨어
 app.use((err, req, res, next) => {
   console.error("\n[에러 발생]");
   console.error("메시지:", err.message);
   console.error("스택:", err.stack);
 
-  // Multer 에러 처리
   if (err.code === "LIMIT_UNEXPECTED_FILE") {
     return res.status(400).json({
       success: false,
