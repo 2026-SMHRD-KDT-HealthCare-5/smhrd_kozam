@@ -11,24 +11,19 @@ const UserInfo = () => {
     - 수면 자세 선택 기능 구현
     - 모니터링 기록 및 수면 시간 데이터 API 연동
   */
-  const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const userData = await getUserById(1);
-      setUser(userData);
-    };
-    fetchUser();
-    // const fetchUser = async () => {
-    //   const { data, isLoading, isError } = await useAsync(getUserById(1), {
-    //     immediate: true,
-    //   });
+  const {
+    data: user,
+    isLoading,
+    isError,
+    error,
+  } = useAsync(() => getUserById(1), {
+    immediate: true,
+  });
 
-    //   setUser(data);
-    // };
+  if (isLoading) return <p>로딩중...</p>;
 
-    // fetchUser();
-  }, []);
+  if (isError) return <p>{error.message}</p>;
 
   const handleSubmit = () => {};
 
