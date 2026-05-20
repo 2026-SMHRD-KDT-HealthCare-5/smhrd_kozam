@@ -1,5 +1,8 @@
+.app-wrapper {
+  color: transparent;
+}
+
 .app-inner {
   border: 1px solid;
   min-width: 520px;
-  height: 100%;
 }

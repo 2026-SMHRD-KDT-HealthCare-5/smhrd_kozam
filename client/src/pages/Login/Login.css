@@ -1,0 +1,49 @@
+.login-page {
+  position: relative;
+  width: min(520px);
+  min-height: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  background-image: url(@/assets/images/loginBack.png);
+  background-size: cover;
+  background-position: center;
+}
+
+.main-logo {
+  width: min(76%, 300px);
+  margin-bottom: 12px;
+}
+
+.login-hero {
+  min-height: 342px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: transparent;
+}
+
+.login-hero p {
+  margin: 0;
+  color: #c7bfd7;
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.primary-btn {
+  min-height: 64px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 14px;
+  background: linear-gradient(135deg, #a64cff, #6b22de);
+  color: #fff;
+  font-size: 21px;
+  font-weight: 800;
+  box-shadow: 0 0 24px rgba(150, 72, 255, 0.45);
+}

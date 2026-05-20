@@ -2,12 +2,14 @@
   border: 1px solid;
   width: 520px;
   height: 100%;
+  color: transparent;
 }
 
 .web-content-inner {
   position: relative;
   width: 100%;
-  height: 100vh;
+  /* height: 100vh; */
+  min-height: 100dvh;
 }
 
 .web-content-title {
@@ -23,7 +25,8 @@
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  background-image: url(@/assets/images/Panda_main.png);
+  background-image: url(@/assets/images/webPanda.png);
+  background-size: cover;
 }
 
 @media (max-width: 1040px) {
