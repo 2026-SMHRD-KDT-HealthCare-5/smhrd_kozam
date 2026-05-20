@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { getUser, login as loginApi } from "@/api/auth";
+import { login as loginApi } from "@/api/auth";
+import { getUserById } from "@/api/user";
 
 export function useAuth() {
   const [user, setUser] = useState(null);
@@ -15,7 +16,7 @@ export function useAuth() {
       }
 
       try {
-        const userData = await getUser(storedUserId);
+        const userData = await getUserById(storedUserId);
         setUser(userData);
       } catch (error) {
         console.error("Failed to fetch user info:", error);
@@ -31,8 +32,9 @@ export function useAuth() {
   const login = async (credentials) => {
     try {
       const userData = await loginApi(credentials);
-      setUser(userData);
-      localStorage.setItem("userId", userData.id);
+      const user = userData.user;
+      setUser(user);
+      localStorage.setItem("userId", user.idx);
     } catch (error) {
       console.error("Login failed:", error);
       throw error;
