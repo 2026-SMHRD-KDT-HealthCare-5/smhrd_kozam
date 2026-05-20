@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { getUser, login as loginApi } from "@/api/auth";
+import { login as loginApi } from "@/api/auth";
+import { getUserById } from "@/api/user";
 
 export function useAuth() {
   const [user, setUser] = useState(null);
@@ -15,7 +16,7 @@ export function useAuth() {
       }
 
       try {
-        const userData = await getUser(storedUserId);
+        const userData = await getUserById(storedUserId);
         setUser(userData);
       } catch (error) {
         console.error("Failed to fetch user info:", error);
