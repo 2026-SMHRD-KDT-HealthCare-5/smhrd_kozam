@@ -1,11 +1,12 @@
+import "@/App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ProtectedRoute from "@/router/ProtectedRoute";
 import WebContent from "@/layouts/WebContent/WebContent";
 import AppWrapper from "@/layouts/AppWrapper/AppWrapper";
+import AppMainLayout from "@/layouts/AppMainLayout/AppMainLayout";
 import SnoreMonitoring from "@/pages/SnoreMonitoring/SnoreMonitoring";
 import Login from "@/pages/Login/Login";
-import "@/App.css";
-import AppMainLayout from "./layouts/AppMainLayout/AppMainLayout";
+import MyPage from "@/pages/MyPage/MyPage";
 
 function App() {
   return (
@@ -21,7 +22,7 @@ function App() {
                 <Route element={<AppMainLayout />}>
                   <Route path="/" element={<SnoreMonitoring />} />
                   {/* History */}
-                  {/* Mypage */}
+                  <Route path="/mypage" element={<MyPage />} />
                 </Route>
               </Route>
             </Route>
