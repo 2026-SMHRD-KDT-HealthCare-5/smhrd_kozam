@@ -32,8 +32,9 @@ export function useAuth() {
   const login = async (credentials) => {
     try {
       const userData = await loginApi(credentials);
-      setUser(userData);
-      localStorage.setItem("userId", userData.id);
+      const user = userData.user;
+      setUser(user);
+      localStorage.setItem("userId", user.idx);
     } catch (error) {
       console.error("Login failed:", error);
       throw error;
