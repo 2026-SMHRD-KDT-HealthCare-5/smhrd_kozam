@@ -11,7 +11,7 @@ const UserInfo = () => {
     - 수면 자세 선택 기능 구현
     - 모니터링 기록 및 수면 시간 데이터 API 연동
   */
-
+  const postures = ["정자세", "측면자세", "엎드린자세"];
   const {
     data: user,
     isLoading,
@@ -20,12 +20,30 @@ const UserInfo = () => {
   } = useAsync(() => getUserById(1), {
     immediate: true,
   });
+  const [posture, setPosture] = useState(null);
+
+  useEffect(() => {
+    setPosture(user?.sleeping_posture);
+  }, [user]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+    const updatedData = Object.fromEntries(formData.entries());
+
+    updatedData.sleeping_posture = posture;
+
+    // TODO: updatedData로 API 연동
+  };
+  const handlePostureClick = (e) => {
+    e.preventDefault();
+    setPosture(e.target.innerText);
+  };
 
   if (isLoading) return <p>로딩중...</p>;
 
   if (isError) return <p>{error.message}</p>;
-
-  const handleSubmit = () => {};
 
   return (
     <>
@@ -40,10 +58,10 @@ const UserInfo = () => {
               <p>Member since {user?.joined_at}</p>
               <div className="mini-stats">
                 <span>
-                  모니터링 기록 <strong>{user?.monitoring_count || 0}회</strong>
+                  모니터링 기록 <strong>{user?.monitoring_count}회</strong>
                 </span>
                 <span>
-                  알람 횟수 <strong>{user?.alarm_count || 0}회</strong>
+                  알람 횟수 <strong>{user?.alarm_count}회</strong>
                 </span>
               </div>
             </div>
@@ -91,27 +109,21 @@ const UserInfo = () => {
           </div>
           <h2>평소 수면 자세</h2>
           <div className="posture-row">
-            <button
-              className={user?.sleeping_posture === "정자세" ? "active" : ""}
-            >
-              정자세
-            </button>
-            <button
-              className={user?.sleeping_posture === "측면자세" ? "active" : ""}
-            >
-              측면자세
-            </button>
-            <button
-              className={
-                user?.sleeping_posture === "엎드린자세" ? "active" : ""
-              }
-            >
-              엎드린자세
-            </button>
+            {postures.map((e) => {
+              return (
+                <button
+                  key={e}
+                  className={posture === e ? "active" : ""}
+                  onClick={handlePostureClick}
+                >
+                  {e}
+                </button>
+              );
+            })}
           </div>
         </section>
         <div className="footer-actions">
-          <button>취소</button>
+          {/* <button>취소</button> */}
           <button>저장하기</button>
         </div>
       </form>
