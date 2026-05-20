@@ -1,7 +1,6 @@
 const mysql = require("mysql2");
 
 // 데이터베이스 연결 풀(Pool) 생성
-// 매번 연결하고 끊는 것보다 '풀'을 만들어 재사용하는 것이 효율적입니다.
 const pool = mysql.createPool({
   host: "project-db-campus.smhrd.com",
   port: 3312,
@@ -15,5 +14,18 @@ const pool = mysql.createPool({
 
 // 비동기 처리를 위해 promise 기반으로 내보내기
 const promisePool = pool.promise();
+
+// ==========================================
+// DB 연결 테스트 코드 (서버 실행 시 한 번 작동)
+// ==========================================
+promisePool
+  .getConnection()
+  .then((connection) => {
+    console.log("✅ DB 연결 성공! (프로젝트 DB에 정상 접속되었습니다)");
+    connection.release(); // 연결 확인 후 풀에 다시 반환
+  })
+  .catch((err) => {
+    console.error("❌ DB 연결 실패:", err.message);
+  });
 
 module.exports = promisePool;

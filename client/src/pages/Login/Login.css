@@ -1,21 +1,28 @@
 .login-page {
   position: relative;
-  width: min(520px);
-  min-height: 100%;
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
   margin: 0 auto;
   overflow: hidden;
   background-image: url(@/assets/images/loginBack.png);
   background-size: cover;
   background-position: center;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(24px, 5vh, 56px) 28px;
 }
 
 .main-logo {
-  width: min(76%, 300px);
+  width: clamp(180px, 45vw, 300px);
   margin-bottom: 12px;
 }
 
 .login-hero {
-  min-height: 342px;
+  min-height: auto;
+  margin-bottom: clamp(80px, 5vh, 48px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -34,11 +41,10 @@
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
 
 .primary-btn {
-  min-height: 64px;
+  min-height: 58px;
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 14px;
   background: linear-gradient(135deg, #a64cff, #6b22de);

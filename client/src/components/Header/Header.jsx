@@ -24,7 +24,7 @@ const Header = () => {
           // onClick={() => navigate("/history")}
           onClick={() => {
             logout();
-            navigate("/login")
+            navigate("/login");
           }}
           aria-label="히스토리로 이동"
         >
@@ -32,8 +32,7 @@ const Header = () => {
         </button>
         <button
           className="icon-btn"
-          // onClick={() => navigate("/mypage")}
-          onClick={() => {}}
+          onClick={() => navigate("/mypage")}
           aria-label="마이페이지로 이동"
         >
           <Settings />
