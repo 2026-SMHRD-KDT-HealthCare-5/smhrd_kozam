@@ -5,10 +5,11 @@ import {
   checkMicPermission,
   requestMicPermission,
 } from "client/src/utils/micPermission";
+import { useAuth } from "client/src/hooks/useAuth";
 
 const MonitoringSetting = () => {
   const [useMic, setUseMic] = useState(false);
-  const [alarmCondition, setAlarmCondition] = useState("2");
+  const { user } = useAuth();
 
   useEffect(() => {
     const initializeMicPermission = async () => {
@@ -35,9 +36,16 @@ const MonitoringSetting = () => {
         <Toggle
           isOn={useMic}
           onToggle={async () => {
-            if (!useMic) {
+            if (useMic) return;
+
+            const permissionState = checkMicPermission();
+
+            if (permissionState === "prompt") {
               const result = await requestMicPermission();
               setUseMic(result);
+            } else {
+              // TODO: 모달 구현
+              console.log("브라우저에서 직접 마이크 권한 재설정 후 시도");
             }
           }}
         />
@@ -48,17 +56,19 @@ const MonitoringSetting = () => {
         </h2>
         <p>어떤 상황에서 알람을 받을지 선택하세요.</p>
         <Option
-          active
+          active={user?.alarmCondition === "1"}
           icon={<Waves />}
           title="지속시간 기반"
           text="코골이가 일정 시간 이상 지속되면 알람을 보내요."
         />
         <Option
+          active={user?.alarmCondition === "2"}
           icon={<RefreshCcw />}
           title="반복패턴 기반"
           text="코골이 패턴이 반복될 때 알람을 보내요."
         />
         <Option
+          active={user?.alarmCondition === "3"}
           icon={<Bell />}
           title="알람 받지 않음"
           text="알람을 받지 않고 분석만 진행해요."
