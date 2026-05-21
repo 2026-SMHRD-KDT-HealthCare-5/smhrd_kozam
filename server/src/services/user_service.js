@@ -62,7 +62,3 @@ exports.getUser = async ({ userId }) => {
 exports.updateUser = async ({}) => {
   return {};
 };
-
-exports.updateSettings = async ({}) => {
-  return {};
-};
