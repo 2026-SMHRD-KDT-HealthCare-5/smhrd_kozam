@@ -32,6 +32,7 @@ export function useAuth() {
   const login = async (credentials) => {
     try {
       const userData = await loginApi(credentials);
+      
       const user = userData.user;
       setUser(user);
       localStorage.setItem("userId", user.idx);
