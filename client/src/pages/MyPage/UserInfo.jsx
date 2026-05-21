@@ -1,5 +1,5 @@
 import sleepingPanda from "@/assets/images/sleepingPanda.png";
-import { User, Mail, Phone, Lock, BedDouble } from "lucide-react";
+import { User, Mail, Phone, Ruler, Weight } from "lucide-react";
 import { getUserById } from "@/api/user";
 import { useEffect, useState } from "react";
 import { useAsync } from "@/hooks/useAsync";
@@ -50,7 +50,9 @@ const UserInfo = () => {
       <form onSubmit={handleSubmit}>
         <section className="profile-card">
           <div className="profile-top">
-            <img src={sleepingPanda} alt="프로필" />
+            <div className="profile-image-wrap">
+              <img src={sleepingPanda} alt="프로필" />
+            </div>
             <div>
               <h1>
                 KOZAM <b>Premium</b>
@@ -94,7 +96,7 @@ const UserInfo = () => {
               type="number"
               label="키"
               name="height"
-              icon={<BedDouble />}
+              icon={<Ruler />}
               defaultValue={user?.height}
               action="cm"
             />
@@ -102,7 +104,7 @@ const UserInfo = () => {
               type="number"
               label="몸무게"
               name="weight"
-              icon={<Lock />}
+              icon={<Weight />}
               defaultValue={user?.weight}
               action="kg"
             />
