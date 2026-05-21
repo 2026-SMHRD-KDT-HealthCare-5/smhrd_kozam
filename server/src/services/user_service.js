@@ -3,6 +3,7 @@
  */
 const db = require("../config/database");
 
+// TODO: 아래 method 전부 실제 처리 로직 구현하기
 exports.getUser = async ({ userId }) => {
   const [[userRows], [profileRows], [settingRows], [sessionRows], [alarmRows]] =
     await Promise.all([
@@ -68,4 +69,12 @@ exports.getUser = async ({ userId }) => {
     monitoringCount: sessionRows[0].count,
     alarmCount: alarmRows[0].count,
   };
+};
+
+exports.updateUser = async ({}) => {
+  return {};
+};
+
+exports.updateSettings = async ({}) => {
+  return {};
 };
