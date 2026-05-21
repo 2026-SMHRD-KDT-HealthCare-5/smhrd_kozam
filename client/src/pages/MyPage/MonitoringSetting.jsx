@@ -1,10 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./MonitoringSetting.module.css";
 import { Mic, Waves, RefreshCcw, Bell, Check } from "lucide-react";
+import {
+  checkMicPermission,
+  requestMicPermission,
+} from "client/src/utils/micPermission";
 
 const MonitoringSetting = () => {
-  const [useMic, setUseMic] = useState(true);
+  const [useMic, setUseMic] = useState(false);
   const [alarmCondition, setAlarmCondition] = useState("2");
+  const { state } = checkMicPermission();
+
+  useEffect(() => {
+    if (state === "granted") {
+      setUseMic(true);
+    } else {
+      setUseMic(false);
+    }
+  }, [state]);
 
   return (
     <>
