@@ -6,33 +6,29 @@ export function useAuth() {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const initializeAuth = async () => {
-      const storedUserId = localStorage.getItem("userId");
+  const initializeAuth = async () => {
+    const storedUserId = localStorage.getItem("userId");
 
-      if (!storedUserId) {
-        setIsLoading(false);
-        return;
-      }
+    if (!storedUserId) {
+      setIsLoading(false);
+      return;
+    }
 
-      try {
-        const userData = await getUserById(storedUserId);
-        setUser(userData);
-      } catch (error) {
-        console.error("Failed to fetch user info:", error);
-        throw error;
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initializeAuth();
-  }, []);
+    try {
+      const userData = await getUserById(storedUserId);
+      setUser(userData);
+    } catch (error) {
+      console.error("Failed to fetch user info:", error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const login = async (credentials) => {
     try {
       const userData = await loginApi(credentials);
-      
+
       const user = userData.user;
       setUser(user);
       localStorage.setItem("userId", user.idx);
@@ -47,5 +43,11 @@ export function useAuth() {
     localStorage.removeItem("userId");
   };
 
-  return { user, isLoading, login, logout };
+  const refreshUser = () => initializeAuth();
+
+  useEffect(() => {
+    initializeAuth();
+  }, []);
+
+  return { user, isLoading, login, logout, refreshUser };
 }

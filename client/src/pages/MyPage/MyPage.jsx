@@ -1,6 +1,7 @@
 import "./MyPage.css";
 import { useState } from "react";
 import UserInfo from "./UserInfo";
+import MonitoringSetting from "./MonitoringSetting";
 
 const MyPage = () => {
   const [profileTab, setProfileTab] = useState("user");
@@ -22,8 +23,7 @@ const MyPage = () => {
             모니터링 설정
           </button>
         </div>
-        <UserInfo />
-        {/* {profileTab === "user" ? <UserInfo /> : <AlarmSettings />} */}
+        {profileTab === "user" ? <UserInfo /> : <MonitoringSetting />}
       </section>
     </main>
   );

@@ -11,13 +11,6 @@ export const updateUser = async (id, userData) => {
     success: true,
     data: {},
   };
-  return response.success;
-};
 
-export const updateSettings = async (id, settingsData) => {
-  const response = {
-    success: true,
-    data: {},
-  };
   return response.success;
 };
