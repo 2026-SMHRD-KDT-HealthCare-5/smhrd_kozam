@@ -47,13 +47,13 @@ const UserInfo = () => {
             <h1>
               KOZAM <b>Premium</b>
             </h1>
-            <p>Member since {user?.joined_at}</p>
+            <p>Member since {user?.joinedAt}</p>
             <div className="mini-stats">
               <span>
-                모니터링 기록 <strong>{user?.monitoring_count}회</strong>
+                모니터링 기록 <strong>{user?.monitoringCount}회</strong>
               </span>
               <span>
-                알람 횟수 <strong>{user?.alarm_count}회</strong>
+                알람 횟수 <strong>{user?.alarmCount}회</strong>
               </span>
             </div>
           </div>
