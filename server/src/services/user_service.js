@@ -5,11 +5,11 @@ const db = require("../config/database");
 
 // TODO: 아래 method 전부 실제 처리 로직 구현하기
 exports.getUser = async ({ userId }) => {
-  const [[userRows], [profileRows], [settingRows], [sessionRows], [alarmRows]] =
+  const [[userRows], [profileRows], [sessionRows], [alarmRows]] =
     await Promise.all([
       db.query(
         `
-        select idx, login_id, nick, email, phone, joined_at 
+        select idx, login_id, nick, email, phone, alarm_condition, joined_at 
         from users
         where idx = ?
         `,
@@ -19,16 +19,6 @@ exports.getUser = async ({ userId }) => {
         `
         select height, weight, sleeping_posture, created_at
         from profiles
-        where user_idx = ?
-        order by created_at desc
-        limit 1
-        `,
-        [userId],
-      ),
-      db.query(
-        `
-        select use_mic, alarm_condition, is_active, created_at
-        from settings
         where user_idx = ?
         order by created_at desc
         limit 1
@@ -59,13 +49,11 @@ exports.getUser = async ({ userId }) => {
     nick: userRows[0].nick,
     email: userRows[0].email,
     phone: userRows[0].phone,
+    alarmCondition: userRows[0].alarm_condition,
     joinedAt: userRows[0].joined_at,
     height: profileRows[0].height,
     weight: profileRows[0].weight,
     sleepingPosture: profileRows[0].sleeping_posture,
-    useMic: settingRows[0].use_mic,
-    alarmCondition: settingRows[0].alarm_condition,
-    alarmActive: settingRows[0].is_active,
     monitoringCount: sessionRows[0].count,
     alarmCount: alarmRows[0].count,
   };
