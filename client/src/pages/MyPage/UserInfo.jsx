@@ -1,5 +1,5 @@
 import sleepingPanda from "@/assets/images/sleepingPanda.png";
-import { User, Mail, Phone, Lock, BedDouble } from "lucide-react";
+import { User, Mail, Phone, Ruler, Weight } from "lucide-react";
 import { getUserById } from "@/api/user";
 import { useEffect, useState } from "react";
 import { useAsync } from "@/hooks/useAsync";
@@ -40,18 +40,20 @@ const UserInfo = () => {
     <form onSubmit={handleSubmit}>
       <section className="profile-card">
         <div className="profile-top">
-          <img src={sleepingPanda} alt="프로필" />
+          <div className="profile-image-wrap">
+            <img src={sleepingPanda} alt="프로필" />
+          </div>
           <div>
             <h1>
               KOZAM <b>Premium</b>
             </h1>
-            <p>Member since {user?.joinedAt}</p>
+            <p>Member since {user?.joined_at}</p>
             <div className="mini-stats">
               <span>
-                모니터링 기록 <strong>{user?.monitoringCount}회</strong>
+                모니터링 기록 <strong>{user?.monitoring_count}회</strong>
               </span>
               <span>
-                알람 횟수 <strong>{user?.alarmCount}회</strong>
+                알람 횟수 <strong>{user?.alarm_count}회</strong>
               </span>
             </div>
           </div>
@@ -65,14 +67,14 @@ const UserInfo = () => {
           defaultValue={user?.nick}
         />
         <ProfileInput
-          type="email"
+          type="text"
           label="이메일"
           name="email"
           icon={<Mail />}
           defaultValue={user?.email}
         />
         <ProfileInput
-          type="tel"
+          type="text"
           label="연락처"
           name="phone"
           icon={<Phone />}
@@ -84,7 +86,7 @@ const UserInfo = () => {
             type="number"
             label="키"
             name="height"
-            icon={<BedDouble />}
+            icon={<Ruler />}
             defaultValue={user?.height}
             action="cm"
           />
@@ -92,7 +94,7 @@ const UserInfo = () => {
             type="number"
             label="몸무게"
             name="weight"
-            icon={<Lock />}
+            icon={<Weight />}
             defaultValue={user?.weight}
             action="kg"
           />
