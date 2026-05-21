@@ -4,9 +4,9 @@ import { Mic, Waves, RefreshCcw, Bell, Check } from "lucide-react";
 import {
   checkMicPermission,
   requestMicPermission,
-} from "client/src/utils/micPermission";
-import { useAuth } from "client/src/hooks/useAuth";
-import { updateUser } from "client/src/api/user";
+} from "@/utils/micPermission";
+import { useAuth } from "@/hooks/useAuth";
+import { updateUser } from "@/api/user";
 
 const alarmConditions = [
   {
@@ -32,82 +32,84 @@ const alarmConditions = [
 const MonitoringSetting = () => {
   const [useMic, setUseMic] = useState(false);
   const [alarmOption, setAlarmOption] = useState(null);
-  const { user, refreshUser } = useAuth();
 
-  const handleAlarmOption = async (alarmOption) => {
+  const { user } = useAuth();
+
+  const syncMicPermission = async () => {
+    const { state } = await checkMicPermission();
+
+    setUseMic(state === "granted");
+  };
+
+  const handleMicToggle = async () => {
+    const { state } = await checkMicPermission();
+
+    if (state === "prompt") {
+      const granted = await requestMicPermission();
+
+      setUseMic(granted);
+      return;
+    }
+
+    if (state === "granted") {
+      console.log("마이크 권한 재설정은 브라우저에서 직접 변경만 가능합니다.");
+
+      return;
+    }
+
+    console.log("브라우저에서 직접 마이크 권한 재설정 후 시도해주세요.");
+  };
+
+  const handleAlarmOption = async (alarmCondition) => {
     const success = await updateUser(user.userId, {
       ...user,
-      alarmCondition: alarmOption,
+      alarmCondition,
     });
 
-    // if (success) refreshUser();
-    if (success) setAlarmOption(alarmOption);
+    if (!success) return;
+
+    setAlarmOption(alarmCondition);
   };
 
   useEffect(() => {
-    const initializeMicPermission = async () => {
-      const { state } = await checkMicPermission();
-      setUseMic(state === "granted");
-    };
-
-    initializeMicPermission();
+    syncMicPermission();
   }, []);
 
   useEffect(() => {
-    setAlarmOption(user?.alarmCondition);
+    setAlarmOption(user?.alarmCondition ?? null);
   }, [user?.alarmCondition]);
 
   return (
     <>
       <section className={`${styles.settingCard} ${styles.micCard}`}>
         <Mic />
+
         <div>
           <h2>
             마이크 권한 <span>(모니터링)</span>
           </h2>
+
           <p>AI 코골이 감지를 위해 마이크를 사용해요.</p>
         </div>
-        <Toggle
-          isOn={useMic}
-          onToggle={async () => {
-            const { state } = await checkMicPermission();
 
-            if (state === "prompt") {
-              const granted = await requestMicPermission();
-              setUseMic(granted);
-              return;
-            }
-
-            if (state === "granted") {
-              // TODO: 모달 구현
-              console.log(
-                "마이크 권한 재설정은 브라우저에서 직접 변경만 가능합니다.",
-              );
-              return;
-            }
-
-            if (state === "denied") {
-              // TODO: 모달 구현
-              console.log(
-                "브라우저에서 직접 마이크 권한 재설정 후 시도해주세요.",
-              );
-            }
-          }}
-        />
+        <Toggle isOn={useMic} onToggle={handleMicToggle} />
       </section>
-      <section className={`${styles.settingCard}`}>
+
+      <section className={styles.settingCard}>
         <h2>
           알람 발생 조건 <span>?</span>
         </h2>
+
         <p>어떤 상황에서 알람을 받을지 선택하세요.</p>
-        {alarmConditions.map((e) => (
+
+        {alarmConditions.map((condition) => (
           <Option
-            key={e.value}
-            active={alarmOption === e.value}
-            icon={e.icon}
-            title={e.title}
-            text={e.text}
-            onClick={() => handleAlarmOption(e.value)}
+            key={condition.value}
+            active={alarmOption === condition.value}
+            icon={condition.icon}
+            title={condition.title}
+            text={condition.text}
+            onClick={() => handleAlarmOption(condition.value)}
           />
         ))}
       </section>
@@ -122,15 +124,16 @@ const MonitoringSetting = () => {
 
 const Toggle = ({ isOn, onToggle }) => {
   return (
-    <label className={`${styles.toggleContainer}`}>
-      <div className={`${styles.toggleSwitch}`}>
+    <label className={styles.toggleContainer}>
+      <div className={styles.toggleSwitch}>
         <input
           type="checkbox"
           checked={isOn}
           onChange={onToggle}
-          className={`${styles.toggleInput}`}
+          className={styles.toggleInput}
         />
-        <span className={`${styles.toggleSlider}`} />
+
+        <span className={styles.toggleSlider} />
       </div>
     </label>
   );
@@ -139,7 +142,7 @@ const Toggle = ({ isOn, onToggle }) => {
 function Option({ active = false, icon, title, text, onClick }) {
   return (
     <button
-      className={`${styles.option} ${active ? "active" : ""}`}
+      className={`${styles.option} ${active ? styles.active : ""}`}
       onClick={onClick}
     >
       {icon}
@@ -157,8 +160,9 @@ function Option({ active = false, icon, title, text, onClick }) {
 
 function InfoCard({ title, text }) {
   return (
-    <div className={`${styles.infoCard}`}>
+    <div className={styles.infoCard}>
       <Waves />
+
       <span>
         <strong>{title}</strong>
         <small>{text}</small>
