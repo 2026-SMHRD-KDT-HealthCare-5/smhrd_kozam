@@ -9,15 +9,15 @@ import {
 const MonitoringSetting = () => {
   const [useMic, setUseMic] = useState(false);
   const [alarmCondition, setAlarmCondition] = useState("2");
-  const { state } = checkMicPermission();
 
   useEffect(() => {
-    if (state === "granted") {
-      setUseMic(true);
-    } else {
-      setUseMic(false);
-    }
-  }, [state]);
+    const initializeMicPermission = async () => {
+      const { state } = await checkMicPermission();
+      setUseMic(state === "granted");
+    };
+
+    initializeMicPermission();
+  }, []);
 
   return (
     <>
@@ -32,7 +32,15 @@ const MonitoringSetting = () => {
         {/* <button className={`${styles.switch}`} aria-label="마이크 권한 켜짐">
           <i />
         </button> */}
-        <Toggle isOn={useMic} onToggle={() => setUseMic(!useMic)} />
+        <Toggle
+          isOn={useMic}
+          onToggle={async () => {
+            if (!useMic) {
+              const result = await requestMicPermission();
+              setUseMic(result);
+            }
+          }}
+        />
       </section>
       <section className={`${styles.settingCard}`}>
         <h2>
