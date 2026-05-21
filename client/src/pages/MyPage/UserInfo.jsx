@@ -14,10 +14,18 @@ const UserInfo = () => {
     isLoading,
     isError,
     error,
-  } = useAsync(() => getUserById(authUser?.idx), {
-    immediate: true,
+    execute,
+  } = useAsync(getUserById, {
+    immediate: false,
   });
+
   const [posture, setPosture] = useState(null);
+
+  useEffect(() => {
+    if (authUser?.userId) {
+      execute(authUser.userId);
+    }
+  }, [authUser?.userId, execute]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,14 +37,14 @@ const UserInfo = () => {
 
     try {
       const result = await updateUser(updatedData);
-      if (result.success) {
-        // TODO: 모달 구현
-        console.log("정보가 수정되었습니다.");
-        refreshUser();
-      }
-    } catch (err) {
       // TODO: 모달 구현
+      if (result.success) {
+        alert("정보가 수정되었습니다.");
+      }
+      refreshUser();
+    } catch (err) {
       console.error("Failed to update user:", err);
+      alert("정보 수정에 실패했습니다.");
     }
   };
 
@@ -44,7 +52,7 @@ const UserInfo = () => {
     setPosture(user?.sleepingPosture);
   }, [user]);
 
-  if (isLoading) return <p>로딩중...</p>;
+  if (isLoading || !user) return <p>로딩중...</p>;
 
   if (isError) return <p>{error.message}</p>;
 
