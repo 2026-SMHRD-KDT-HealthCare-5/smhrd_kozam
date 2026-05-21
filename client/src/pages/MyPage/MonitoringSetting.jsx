@@ -61,6 +61,7 @@ const Toggle = ({ isOn, onToggle }) => {
           checked={isOn}
           onChange={onToggle}
           className={`${styles.toggleInput}`}
+          disabled={isOn}
         />
         <span className={`${styles.toggleSlider}`} />
       </div>
