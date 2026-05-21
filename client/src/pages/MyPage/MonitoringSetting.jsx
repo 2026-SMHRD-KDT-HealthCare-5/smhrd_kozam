@@ -72,8 +72,7 @@ const MonitoringSetting = () => {
           onToggle={async () => {
             if (useMic) return;
 
-            // TODO: 버그 픽스, 구조분해 할당 + await
-            const permissionState = checkMicPermission();
+            const { state: permissionState } = await checkMicPermission();
 
             if (permissionState === "prompt") {
               const result = await requestMicPermission();
