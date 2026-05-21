@@ -1,7 +1,11 @@
+import { useState } from "react";
 import styles from "./MonitoringSetting.module.css";
 import { Mic, Waves, RefreshCcw, Bell, Check } from "lucide-react";
 
 const MonitoringSetting = () => {
+  const [useMic, setUseMic] = useState(true);
+  const [alarmCondition, setAlarmCondition] = useState("2");
+
   return (
     <>
       <section className={`${styles.settingCard} ${styles.micCard}`}>
@@ -12,9 +16,10 @@ const MonitoringSetting = () => {
           </h2>
           <p>AI 코골이 감지를 위해 마이크를 사용해요.</p>
         </div>
-        <button className={`${styles.switch}`} aria-label="마이크 권한 켜짐">
+        {/* <button className={`${styles.switch}`} aria-label="마이크 권한 켜짐">
           <i />
-        </button>
+        </button> */}
+        <Toggle isOn={useMic} onToggle={() => setUseMic(!useMic)} />
       </section>
       <section className={`${styles.settingCard}`}>
         <h2>
@@ -44,6 +49,22 @@ const MonitoringSetting = () => {
         text="모든 설정은 안전하게 보호되며, 언제든 변경할 수 있어요."
       />
     </>
+  );
+};
+
+const Toggle = ({ isOn, onToggle }) => {
+  return (
+    <label className={`${styles.toggleContainer}`}>
+      <div className={`${styles.toggleSwitch}`}>
+        <input
+          type="checkbox"
+          checked={isOn}
+          onChange={onToggle}
+          className={`${styles.toggleInput}`}
+        />
+        <span className={`${styles.toggleSlider}`} />
+      </div>
+    </label>
   );
 };
 

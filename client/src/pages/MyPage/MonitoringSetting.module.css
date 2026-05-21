@@ -51,24 +51,6 @@
   line-height: 1.45;
 }
 
-.switch {
-  width: 54px;
-  height: 31px;
-  border: 0;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #a94eff, #7125d4);
-  padding: 3px;
-}
-
-.switch i {
-  display: block;
-  width: 25px;
-  height: 25px;
-  margin-left: auto;
-  border-radius: 50%;
-  background: white;
-}
-
 .option > svg {
   width: 23px;
   height: 23px;
@@ -201,4 +183,94 @@
   color: white;
   display: block;
   line-height: 1.55;
+}
+
+/* Toggle */
+/* 전체 컨테이너 정렬 */
+.toggleContainer {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* 비활성화 상태 스타일 */
+.toggleContainer.disabled {
+  cursor: not-allowed;
+}
+
+/* 스위치 감싸는 영역 고정 크기 */
+.toggleSwitch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+}
+
+/* 실제 input은 숨기되, 키보드 접근성(Focus)은 유지 */
+.toggleInput {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* 배경 트랙 (기본: 꺼진 상태) */
+.toggleSlider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #d1d5db; /* gray-300 */
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+/* 내부 동그라미 (기본: 꺼진 상태) */
+.toggleSlider::before {
+  content: "";
+  position: absolute;
+  height: 20px;
+  width: 20px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.switch {
+  width: 54px;
+  height: 31px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #a94eff, #7125d4);
+  padding: 3px;
+}
+
+/* 켜진 상태 (Checked) 배경색 변경 */
+.toggleInput:checked + .toggleSlider {
+  background: linear-gradient(135deg, #a94eff, #7125d4);
+}
+
+/* 켜진 상태 (Checked) 동그라미 이동 */
+.toggleInput:checked + .toggleSlider::before {
+  transform: translateX(20px);
+}
+
+/* 키보드로 탭 이동 시(Focus) 아웃라인 표시 */
+.toggleInput:focus-visible + .toggleSlider {
+  outline: 2px solid #7125d4;
+  outline-offset: 2px;
+}
+
+/* 비활성화(Disabled) 배경색 처리 */
+.toggleInput:disabled + .toggleSlider {
+  background-color: #e5e7eb; /* gray-200 */
+}
+.toggleInput:disabled + .toggleSlider::before {
+  background-color: #f3f4f6; /* gray-100 */
+  box-shadow: none;
 }
