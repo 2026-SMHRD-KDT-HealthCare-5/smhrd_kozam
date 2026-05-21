@@ -5,12 +5,21 @@ const InputField = ({
   icon,
   value,
   onChange,
+  defaultValue,
+  name,
   placeholder,
   helper,
   sideHelper,
   action,
+  required,
   type = "text",
 }) => {
+  const handleChange = (event) => {
+    if (onChange) {
+      onChange(event.target.value);
+    }
+  };
+
   return (
     <label className="field-block">
       <span>{label}</span>
@@ -18,9 +27,12 @@ const InputField = ({
         {icon}
         <input
           type={type}
+          name={name}
           value={value}
-          onChange={(event) => onChange(event.target.value)}
+          defaultValue={defaultValue}
+          onChange={handleChange}
           placeholder={placeholder}
+          required={required}
         />
         {action}
       </div>

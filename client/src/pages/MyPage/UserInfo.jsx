@@ -1,25 +1,25 @@
 import sleepingPanda from "@/assets/images/sleepingPanda.png";
 import { User, Mail, Phone, Ruler, Weight } from "lucide-react";
-import { getUserById } from "@/api/user";
+import { getUserById, updateUser } from "@/api/user";
 import { useEffect, useState } from "react";
 import { useAsync } from "@/hooks/useAsync";
-import { useAuth } from "client/src/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 const postures = ["정자세", "측면자세", "엎드린자세"];
 
 const UserInfo = () => {
+  const { user: authUser, refreshUser } = useAuth();
   const {
     data: user,
     isLoading,
     isError,
     error,
-  } = useAsync(() => getUserById(1), {
+  } = useAsync(() => getUserById(authUser?.idx), {
     immediate: true,
   });
   const [posture, setPosture] = useState(null);
-  const { refreshUser } = useAuth();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
@@ -27,8 +27,17 @@ const UserInfo = () => {
 
     updatedData.sleepingPosture = posture;
 
-    // TODO: updatedData로 API 연동
-    // refreshUser();
+    try {
+      const result = await updateUser(updatedData);
+      if (result.success) {
+        // TODO: 모달 구현
+        console.log("정보가 수정되었습니다.");
+        refreshUser();
+      }
+    } catch (err) {
+      // TODO: 모달 구현
+      console.error("Failed to update user:", err);
+    }
   };
 
   useEffect(() => {

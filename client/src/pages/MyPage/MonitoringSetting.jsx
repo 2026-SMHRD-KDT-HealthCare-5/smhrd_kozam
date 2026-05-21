@@ -33,7 +33,7 @@ const MonitoringSetting = () => {
   const [useMic, setUseMic] = useState(false);
   const [alarmOption, setAlarmOption] = useState(null);
 
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
 
   const syncMicPermission = async () => {
     const { state } = await checkMicPermission();
@@ -61,14 +61,20 @@ const MonitoringSetting = () => {
   };
 
   const handleAlarmOption = async (alarmCondition) => {
-    const success = await updateUser(user.userId, {
-      ...user,
-      alarmCondition,
-    });
+    try {
+      const result = await updateUser({
+        userId: user.userId,
+        alarmCondition,
+      });
 
-    if (!success) return;
-
-    setAlarmOption(alarmCondition);
+      if (result.success) {
+        setAlarmOption(alarmCondition);
+        refreshUser();
+      }
+    } catch (err) {
+      // TODO: 모달 구현
+      console.error("Failed to update alarm settings:", err);
+    }
   };
 
   useEffect(() => {
