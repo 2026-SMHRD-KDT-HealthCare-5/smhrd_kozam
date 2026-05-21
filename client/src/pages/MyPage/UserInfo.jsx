@@ -50,10 +50,10 @@ const UserInfo = () => {
             <p>Member since {user?.joined_at}</p>
             <div className="mini-stats">
               <span>
-                모니터링 기록 <strong>{user?.monitoringCount}회</strong>
+                모니터링 기록 <strong>{user?.monitoring_count}회</strong>
               </span>
               <span>
-                알람 횟수 <strong>{user?.alarmCount}회</strong>
+                알람 횟수 <strong>{user?.alarm_count}회</strong>
               </span>
             </div>
           </div>
@@ -101,14 +101,15 @@ const UserInfo = () => {
         </div>
         <h2>평소 수면 자세</h2>
         <div className="posture-row">
-          {postures.map((e) => {
+          {postures.map((option) => {
             return (
               <button
-                key={e}
-                className={posture === e ? "active" : ""}
-                onClick={handlePostureClick}
+                key={option}
+                type="button"
+                className={posture === option ? "active" : ""}
+                onClick={() => setPosture(option)}
               >
-                {e}
+                {option}
               </button>
             );
           })}
