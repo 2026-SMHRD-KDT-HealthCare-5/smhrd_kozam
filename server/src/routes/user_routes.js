@@ -5,7 +5,7 @@ const express = require("express");
 const userRoutes = express.Router();
 const userController = require("../controllers/user_controller");
 
-userRoutes.get("/", userController.getUser);
+userRoutes.get("/:id", userController.getUser);
 userRoutes.patch("/", userController.updateUser);
 userRoutes.patch("/setting", userController.updateSettings);
 
