@@ -70,16 +70,27 @@ const MonitoringSetting = () => {
         <Toggle
           isOn={useMic}
           onToggle={async () => {
-            if (useMic) return;
+            const { state } = await checkMicPermission();
 
-            const { state: permissionState } = await checkMicPermission();
+            if (state === "prompt") {
+              const granted = await requestMicPermission();
+              setUseMic(granted);
+              return;
+            }
 
-            if (permissionState === "prompt") {
-              const result = await requestMicPermission();
-              setUseMic(result);
-            } else {
+            if (state === "granted") {
               // TODO: 모달 구현
-              console.log("브라우저에서 직접 마이크 권한 재설정 후 시도");
+              console.log(
+                "마이크 권한 재설정은 브라우저에서 직접 변경만 가능합니다.",
+              );
+              return;
+            }
+
+            if (state === "denied") {
+              // TODO: 모달 구현
+              console.log(
+                "브라우저에서 직접 마이크 권한 재설정 후 시도해주세요.",
+              );
             }
           }}
         />
@@ -118,7 +129,6 @@ const Toggle = ({ isOn, onToggle }) => {
           checked={isOn}
           onChange={onToggle}
           className={`${styles.toggleInput}`}
-          disabled={isOn}
         />
         <span className={`${styles.toggleSlider}`} />
       </div>
