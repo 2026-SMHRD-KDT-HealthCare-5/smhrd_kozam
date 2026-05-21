@@ -7,12 +7,6 @@ import { useAsync } from "@/hooks/useAsync";
 const postures = ["정자세", "측면자세", "엎드린자세"];
 
 const UserInfo = () => {
-  /* TODO
-    - API 연동 후 user 데이터로 대체 
-    - 입력 필드 활성화 및 수정 기능 구현
-    - 수면 자세 선택 기능 구현
-    - 모니터링 기록 및 수면 시간 데이터 API 연동
-  */
   const {
     data: user,
     isLoading,
@@ -24,13 +18,7 @@ const UserInfo = () => {
   const [posture, setPosture] = useState(null);
 
   useEffect(() => {
-    if (user?.sleeping_posture) {
-      setPosture(user.sleeping_posture);
-    }
-  }, [user?.sleeping_posture]);
-
-  useEffect(() => {
-    setPosture(user?.sleeping_posture);
+    setPosture(user?.sleepingPosture);
   }, [user]);
 
   const handleSubmit = (e) => {
@@ -39,7 +27,7 @@ const UserInfo = () => {
     const formData = new FormData(e.currentTarget);
     const updatedData = Object.fromEntries(formData.entries());
 
-    updatedData.sleeping_posture = posture;
+    updatedData.sleepingPosture = posture;
 
     // TODO: updatedData로 API 연동
   };
@@ -57,13 +45,13 @@ const UserInfo = () => {
             <h1>
               KOZAM <b>Premium</b>
             </h1>
-            <p>Member since {user?.joined_at}</p>
+            <p>Member since {user?.joinedAt}</p>
             <div className="mini-stats">
               <span>
-                모니터링 기록 <strong>{user?.monitoring_count}회</strong>
+                모니터링 기록 <strong>{user?.monitoringCount}회</strong>
               </span>
               <span>
-                알람 횟수 <strong>{user?.alarm_count}회</strong>
+                알람 횟수 <strong>{user?.alarmCount}회</strong>
               </span>
             </div>
           </div>
