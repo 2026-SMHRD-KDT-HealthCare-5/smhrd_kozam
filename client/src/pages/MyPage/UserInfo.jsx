@@ -3,6 +3,7 @@ import { User, Mail, Phone, Ruler, Weight } from "lucide-react";
 import { getUserById } from "@/api/user";
 import { useEffect, useState } from "react";
 import { useAsync } from "@/hooks/useAsync";
+import { useAuth } from "client/src/hooks/useAuth";
 
 const postures = ["정자세", "측면자세", "엎드린자세"];
 
@@ -16,10 +17,7 @@ const UserInfo = () => {
     immediate: true,
   });
   const [posture, setPosture] = useState(null);
-
-  useEffect(() => {
-    setPosture(user?.sleepingPosture);
-  }, [user]);
+  const { refreshUser } = useAuth();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -30,7 +28,12 @@ const UserInfo = () => {
     updatedData.sleepingPosture = posture;
 
     // TODO: updatedData로 API 연동
+    // refreshUser();
   };
+
+  useEffect(() => {
+    setPosture(user?.sleepingPosture);
+  }, [user]);
 
   if (isLoading) return <p>로딩중...</p>;
 
