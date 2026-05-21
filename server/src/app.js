@@ -5,6 +5,7 @@ const authRoutes = require("./routes/auth_routes");
 const aiRoutes = require("./routes/ai_routes");
 const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
+const userRoutes = require("./routes/user_routes");
 require("dotenv").config();
 
 // ==========================================
@@ -71,6 +72,7 @@ app.get("/", (req, res) => {
 // 5. 경로 마운트 설정
 app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/user", userRoutes);
 
 // 6. 에러 처리 미들웨어
 app.use((err, req, res, next) => {
