@@ -9,7 +9,7 @@ export function useAuth() {
   const initializeAuth = async () => {
     const storedUserId = localStorage.getItem("userId");
 
-    if (!storedUserId) {
+    if (!storedUserId || storedUserId === "undefined") {
       setIsLoading(false);
       return;
     }
@@ -19,7 +19,7 @@ export function useAuth() {
       setUser(userData);
     } catch (error) {
       console.error("Failed to fetch user info:", error);
-      throw error;
+      localStorage.removeItem("userId");
     } finally {
       setIsLoading(false);
     }
@@ -31,7 +31,7 @@ export function useAuth() {
 
       const user = userData.user;
       setUser(user);
-      localStorage.setItem("userId", user.idx);
+      localStorage.setItem("userId", user.userId);
     } catch (error) {
       console.error("Login failed:", error);
       throw error;
