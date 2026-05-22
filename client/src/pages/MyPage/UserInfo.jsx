@@ -67,7 +67,7 @@ const UserInfo = () => {
             <h1>
               {user?.loginId} <b>Premium</b>
             </h1>
-            <p>Member since {user?.joinedAt}</p>
+            <p>Member since {new Date(user?.joinedAt).getFullYear()}</p>
             <div className="mini-stats">
               <span>
                 모니터링 기록 <strong>{user?.monitoringCount}회</strong>
