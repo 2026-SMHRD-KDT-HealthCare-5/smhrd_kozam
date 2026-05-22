@@ -6,11 +6,22 @@
 
 .app {
   display: flex;
-  min-height: 100dvh;
   justify-content: center;
-  background-color: #09001F;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: #09001f;
 }
 
 .app-content {
   display: flex;
+  width: 100vw;
+  height: 100dvh;
+  justify-content: center;
+  align-items: center;
+  background:
+    linear-gradient(rgba(5, 0, 20, 0.5), rgba(5, 0, 20, 0.85)),
+    url("@/assets/images/mainBackground.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
