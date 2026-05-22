@@ -5,7 +5,7 @@ import { Waves, Moon, Square, ShieldCheck, Mic } from "lucide-react";
 import { useState } from "react";
 
 const SnoreMonitoring = () => {
-  const [isRunning, setIsRunning] = useState(true);
+  const [isRunning, setIsRunning] = useState(false);
 
   return (
     <main className={styles.screen}>
