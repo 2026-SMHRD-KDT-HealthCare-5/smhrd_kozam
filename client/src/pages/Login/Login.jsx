@@ -31,7 +31,6 @@ const Login = () => {
 
   return (
     <main className="login-page">
-      {/* ... video ... */}
       <section className="login-hero">
         <img className="main-logo" src={mainLogo} alt="Kozam" />
         <p>
