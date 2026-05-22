@@ -5,13 +5,13 @@ import { Waves, Moon, Square, ShieldCheck, Mic } from "lucide-react";
 import { useState } from "react";
 
 const SnoreMonitoring = () => {
-  const [isRunning, setIsRunning] = useState(true);
+  const [isRunning, setIsRunning] = useState(false);
 
   return (
     <main className={styles.screen}>
       <section className={styles.monitorShell}>
         <div className={styles.statusRow}>
-          <span className={styles.pill}>
+          <span className={`${styles.pill} ${isRunning && styles.active}`}>
             <i />
             {isRunning ? "모니터링중" : "모니터링 준비 완료"}
           </span>
@@ -32,6 +32,10 @@ const SnoreMonitoring = () => {
         <div className={styles.controlPanel}>
           <button
             className={isRunning ? styles.stopAction : styles.startAction}
+            onClick={(e) => {
+              e.preventDefault();
+              setIsRunning(!isRunning);
+            }}
           >
             {isRunning ? <Square /> : <Moon />}
             모니터링 {isRunning ? "종료" : "시작"}
