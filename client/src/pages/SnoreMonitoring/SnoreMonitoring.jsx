@@ -7,6 +7,32 @@ import { formatTime } from "client/src/utils/common";
 
 const SnoreMonitoring = () => {
   const [isRunning, setIsRunning] = useState(false);
+  const [reportData, setReportData] = useState({});
+
+  // TODO: 여기부터 하기
+  /* BE 
+    [ session ]
+    📌 post("/session")
+    req.body
+      userId, height, weight, sleepingPosture
+    res.json
+      {
+        ...,
+        data: 
+        {
+          userId: ,
+          sessionId: ,
+          height: ,
+          weight: ,
+          sleepingPosture: ,
+        },
+      };
+
+    📌 fetch("/session")
+    {
+      userId: ,
+    }
+  */
 
   return (
     <main className={styles.screen}>
@@ -36,6 +62,10 @@ const SnoreMonitoring = () => {
             onClick={(e) => {
               e.preventDefault();
               setIsRunning(!isRunning);
+
+              if (isRunning) {
+                // 코골이 감지 횟수,
+              }
             }}
           >
             {isRunning ? <Square /> : <Moon />}
@@ -52,7 +82,6 @@ const SnoreMonitoring = () => {
 
 const Timer = ({ isRunning }) => {
   const [seconds, setSeconds] = useState(0);
-
   useEffect(() => {
     if (!isRunning) return;
 
