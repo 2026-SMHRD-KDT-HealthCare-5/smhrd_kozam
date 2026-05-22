@@ -65,7 +65,7 @@ const UserInfo = () => {
           </div>
           <div>
             <h1>
-              KOZAM <b>Premium</b>
+              {user?.loginId} <b>Premium</b>
             </h1>
             <p>Member since {user?.joinedAt}</p>
             <div className="mini-stats">
