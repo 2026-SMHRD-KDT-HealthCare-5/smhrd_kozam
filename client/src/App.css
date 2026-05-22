@@ -8,7 +8,8 @@
   display: flex;
   justify-content: center;
   height: 100dvh;
-  overflow: hidden;  
+  overflow: hidden;
+  background-color: #09001f;
 }
 
 .app-content {
