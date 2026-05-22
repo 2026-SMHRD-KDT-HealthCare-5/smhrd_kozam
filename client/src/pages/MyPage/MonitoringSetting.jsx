@@ -1,17 +1,22 @@
 import { useEffect, useState } from "react";
 import styles from "./MonitoringSetting.module.css";
 import { Mic, Waves, RefreshCcw, Bell, Check } from "lucide-react";
+import alarmSettingIcon from "@/assets/images/alarmSettingIcon.png";
 import {
   checkMicPermission,
   requestMicPermission,
 } from "@/utils/micPermission";
 import { useAuth } from "@/hooks/useAuth";
 import { updateUser } from "@/api/user";
+import { BsSoundwave } from "react-icons/bs";
+import { IoNotificationsOffOutline } from "react-icons/io5";
+import { GoQuestion } from "react-icons/go";
+
 
 const alarmConditions = [
   {
     value: "1",
-    icon: <Waves />,
+    icon: <BsSoundwave />,
     title: "지속시간 기반",
     text: "코골이가 일정 시간 이상 지속되면 알람을 보내요.",
   },
@@ -23,7 +28,7 @@ const alarmConditions = [
   },
   {
     value: "3",
-    icon: <Bell />,
+    icon: <IoNotificationsOffOutline />,
     title: "알람 받지 않음",
     text: "알람을 받지 않고 분석만 진행해요.",
   },
@@ -95,7 +100,7 @@ const MonitoringSetting = () => {
             마이크 권한 <span>(모니터링)</span>
           </h2>
 
-          <p>AI 코골이 감지를 위해 마이크를 사용해요.</p>
+          <p>AI 코골이 감지를 위해 마이크를 사용하세요.</p>
         </div>
 
         <Toggle isOn={useMic} onToggle={handleMicToggle} />
@@ -103,7 +108,7 @@ const MonitoringSetting = () => {
 
       <section className={styles.settingCard}>
         <h2>
-          알람 발생 조건 <span>?</span>
+          알람 발생 조건 <span><GoQuestion /></span>
         </h2>
 
         <p>어떤 상황에서 알람을 받을지 선택하세요.</p>
@@ -167,7 +172,7 @@ function Option({ active = false, icon, title, text, onClick }) {
 function InfoCard({ title, text }) {
   return (
     <div className={styles.infoCard}>
-      <Waves />
+      <img src={alarmSettingIcon} alt="" aria-hidden="true" />
 
       <span>
         <strong>{title}</strong>

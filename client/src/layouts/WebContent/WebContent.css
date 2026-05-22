@@ -34,8 +34,8 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #34e37b;
-  box-shadow: 0 0 10px rgba(52, 227, 123, 0.6);
+  background: #e4ea46;
+  box-shadow: 0 0 10px rgba(215, 227, 52, 0.6);
 }
 
 .web-content-copy {
@@ -81,11 +81,17 @@
   place-items: center;
   width: 42px;
   height: 42px;
-  border: 1px solid rgba(165, 101, 255, 0.45);
+  /* border: 1px solid rgba(165, 101, 255, 0.45);
   border-radius: 50%;
   background: rgba(132, 48, 214, 0.28);
   color: #b66cff;
-  font-size: 20px;
+  font-size: 20px; */
+}
+
+.feature-icon img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
 }
 
 .web-content-feature strong {
