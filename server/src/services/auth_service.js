@@ -2,7 +2,7 @@
  * 인증 관련 비즈니스 로직을 처리하는 서비스 클래스
  */
 const db = require("../config/database");
-
+const jwt = require("jsonwebtoken");
 /**
  * 로그인 처리 서비스
  * @param {Object} param0 - 로그인 정보 (loginId, password)
@@ -30,11 +30,17 @@ exports.login = async ({ loginId, password }) => {
       throw new Error("비밀번호가 틀렸습니다.");
     }
 
-    // 4. 로그인 성공 시 필요한 사용자 정보만 반환
+    // 4. 로그인 성공 시 JWT 토큰 생성
+    const token = jwt.sign({ userId: user.idx }, process.env.JWT_SECRET, {
+      expiresIn: "2h",
+    });
+
+    // 5. 로그인 성공 시 필요한 사용자 정보만 반환
     return {
       userId: user.idx,
       loginId: user.login_id,
       nick: user.nick,
+      token: token,
     };
   } catch (error) {
     // 에러 발생 시 상위 컨트롤러로 던짐
