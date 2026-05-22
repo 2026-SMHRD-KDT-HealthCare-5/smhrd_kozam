@@ -16,8 +16,7 @@
   justify-content: space-between;
   min-height: 86px;
   padding: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
-  
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09); 
 }
 
 .app-main-layout > main {
@@ -25,17 +24,6 @@
   min-height: 0;
   overflow-y: auto;
 }
-
-/* .app-header {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 86px;
-  padding: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
-} */
 
 .header-actions {
   display: flex;
@@ -45,12 +33,12 @@
 
 .center-brand {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 10px;
+  transform: none;
 }
 
 .center-brand img {
-  width: 116px;
+  width: 100px;
 }
 
 .icon-btn {
