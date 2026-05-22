@@ -2,7 +2,7 @@ import { BarChart3, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import headerLogo from "@/assets/images/headerLogo.png";
 import "./Header.css";
-import { useAuth } from "client/src/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 
 const Header = () => {
   const navigate = useNavigate();

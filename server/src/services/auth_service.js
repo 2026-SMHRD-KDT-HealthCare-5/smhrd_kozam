@@ -32,7 +32,7 @@ exports.login = async ({ loginId, password }) => {
 
     // 4. 로그인 성공 시 필요한 사용자 정보만 반환
     return {
-      idx: user.idx,
+      userId: user.idx,
       loginId: user.login_id,
       nick: user.nick,
     };

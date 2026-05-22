@@ -8,30 +8,30 @@ import mainLogo from "@/assets/images/mainLogo.png";
 import "./Login.css";
 
 const Login = () => {
-  // TODO: 비제어 컴포넌트로 변경
-  const [inputId, setInputId] = useState("");
-  const [inputPw, setInputPw] = useState("");
-
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [error, setError] = useState(null);
 
-  // TODO: preventDefault 제거 후 submit 이벤트로 로그인 처리
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+
+    const formData = new FormData(e.currentTarget);
+    const loginId = formData.get("loginId");
+    const password = formData.get("password");
+
     try {
-      await login({ loginId: inputId, password: inputPw });
+      await login({ loginId, password });
       navigate("/");
     } catch (error) {
-      // TODO: 로그인 실패 시 사용자에게 피드백 제공 (예: ID 또는 비밀번호 오류)
       console.error("Login failed:", error);
+      setError("아이디 또는 비밀번호가 올바르지 않습니다.");
     }
   };
 
   return (
     <main className="login-page">
-      {/* <video autoPlay muted loop playsInline className="background-video">
-        <source src={bgVideo} type="video/mp4" />
-      </video> */}
+      {/* ... video ... */}
       <section className="login-hero">
         <img className="main-logo" src={mainLogo} alt="Kozam" />
         <p>
@@ -42,24 +42,24 @@ const Login = () => {
       </section>
       <form className="login-form" onSubmit={handleSubmit}>
         <InputField
+          name="loginId"
           label="ID"
           icon={<User />}
-          value={inputId}
-          onChange={(id) => setInputId(id)}
           placeholder="Enter your ID"
           helper="Use the ID associated with your account."
+          required
         />
         <InputField
+          name="password"
           label="Password"
           icon={<Lock />}
-          value={inputPw}
-          onChange={(password) => setInputPw(password)}
           placeholder="Enter your password"
           type="password"
           helper="Minimum 8 characters"
           sideHelper="Forgot password?"
+          required
         />
-        <br />
+        {error && <p className="error-message">{error}</p>}
         <br />
         <button className="primary-btn">Sign in</button>
       </form>

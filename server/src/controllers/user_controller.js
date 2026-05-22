@@ -1,75 +1,64 @@
 /**
  * 사용자 관련 요청을 제어하는 컨트롤러
  */
-const authService = require("../services/user_service");
+const userService = require("../services/user_service");
 
 /**
- * 회원정보 수정 요청 처리 컨트롤러
- * @param {Request} req - Express 요청 객체
- * @param {Response} res - Express 응답 객체
+ * 사용자 정보 조회 요청 처리 컨트롤러
  */
 exports.getUser = async (req, res) => {
-  // const userInfo = authService.getUser(req.body);
-
-  const userInfo = {
-    userId: 1,
-    loginId: "hs",
-    nick: "해성",
-    email: "haexunx@gmail.com",
-    phone: "010-2202-5508",
-    joinedAt: "2026",
-    height: 172,
-    weight: 73,
-    sleepingPosture: "엎드린자세",
-    useMic: true,
-    alarmCondition: "2",
-    alarmActive: true,
-    monitoringCount: 12,
-    alarmCount: 50,
-  };
-
   try {
+    const userId = req.params.id || req.headers["x-user-id"];
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "사용자 ID가 필요합니다.",
+      });
+    }
+
+    const userInfo = await userService.getUser({ userId });
+
+    console.log(`userInfo: ${JSON.stringify(userInfo)}`);
+
     res.status(200).json({
       success: true,
       data: userInfo,
-      message: "",
+      message: "조회 성공",
     });
   } catch (error) {
-    res.status(401).json({
+    console.error("❌ getUser 에러:", error.message);
+    res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
 
+/**
+ * 회원정보 수정 요청 처리 컨트롤러
+ */
 exports.updateUser = async (req, res) => {
   try {
-    const updatedUser = await authService.updateUser(req.body);
+    const userId = req.headers["x-user-id"];
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "인증 정보가 없습니다.",
+      });
+    }
+
+    const updatedUser = await userService.updateUser(userId, req.body);
 
     res.status(200).json({
       success: true,
       data: updatedUser,
-      message: "",
+      message: "회원 정보가 수정되었습니다.",
     });
   } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-exports.updateSettings = async (req, res) => {
-  try {
-    const updatedSettings = authService.updateSettings(req.body);
-
-    res.status(200).json({
-      success: true,
-      data: updatedSettings,
-      message: "",
-    });
-  } catch (error) {
-    res.status(401).json({
+    console.error("❌ updateUser 에러:", error.message);
+    res.status(500).json({
       success: false,
       message: error.message,
     });

@@ -1,27 +1,33 @@
 import sleepingPanda from "@/assets/images/sleepingPanda.png";
 import { User, Mail, Phone, Ruler, Weight } from "lucide-react";
-import { getUserById } from "@/api/user";
+import { getUserById, updateUser } from "@/api/user";
 import { useEffect, useState } from "react";
 import { useAsync } from "@/hooks/useAsync";
+import { useAuth } from "@/hooks/useAuth";
 
 const postures = ["정자세", "측면자세", "엎드린자세"];
 
 const UserInfo = () => {
+  const { user: authUser, refreshUser } = useAuth();
   const {
     data: user,
     isLoading,
     isError,
     error,
-  } = useAsync(() => getUserById(1), {
-    immediate: true,
+    execute,
+  } = useAsync(getUserById, {
+    immediate: false,
   });
+
   const [posture, setPosture] = useState(null);
 
   useEffect(() => {
-    setPosture(user?.sleepingPosture);
-  }, [user]);
+    if (authUser?.userId) {
+      execute(authUser.userId);
+    }
+  }, [authUser?.userId, execute]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
@@ -29,10 +35,24 @@ const UserInfo = () => {
 
     updatedData.sleepingPosture = posture;
 
-    // TODO: updatedData로 API 연동
+    try {
+      const result = await updateUser(updatedData);
+      // TODO: 모달 구현
+      if (result.success) {
+        alert("정보가 수정되었습니다.");
+      }
+      refreshUser();
+    } catch (err) {
+      console.error("Failed to update user:", err);
+      alert("정보 수정에 실패했습니다.");
+    }
   };
 
-  if (isLoading) return <p>로딩중...</p>;
+  useEffect(() => {
+    setPosture(user?.sleepingPosture);
+  }, [user]);
+
+  if (isLoading || !user) return <p>로딩중...</p>;
 
   if (isError) return <p>{error.message}</p>;
 
@@ -47,13 +67,13 @@ const UserInfo = () => {
             <h1>
               KOZAM <b>Premium</b>
             </h1>
-            <p>Member since {user?.joined_at}</p>
+            <p>Member since {user?.joinedAt}</p>
             <div className="mini-stats">
               <span>
-                모니터링 기록 <strong>{user?.monitoring_count}회</strong>
+                모니터링 기록 <strong>{user?.monitoringCount}회</strong>
               </span>
               <span>
-                알람 횟수 <strong>{user?.alarm_count}회</strong>
+                알람 횟수 <strong>{user?.alarmCount}회</strong>
               </span>
             </div>
           </div>

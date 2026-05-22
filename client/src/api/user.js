@@ -1,23 +1,17 @@
 import apiClient from "@/utils/client";
 
 export const getUserById = async (userId) => {
+  if (!userId) return;
+
   const response = await apiClient.get(`/user/${userId}`);
 
   return response.data.data;
 };
 
-export const updateUser = async (id, userData) => {
-  const response = {
-    success: true,
-    data: {},
-  };
-  return response.success;
-};
+export const updateUser = async (userData) => {
+  if (!userData) return;
 
-export const updateSettings = async (id, settingsData) => {
-  const response = {
-    success: true,
-    data: {},
-  };
-  return response.success;
+  const response = await apiClient.patch("/user", userData);
+
+  return response.data;
 };
