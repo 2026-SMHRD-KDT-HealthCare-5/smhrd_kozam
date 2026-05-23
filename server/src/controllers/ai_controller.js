@@ -41,7 +41,7 @@ exports.predictSnore = async (req, res) => {
         success: true,
         data: {
           predicted: response.data.prediction.predicted,
-          snore_prob: response.data.prediction.snore_prob,
+          snoreProb: response.data.prediction.snore_prob,
           rms: response.data.prediction.rms,
           intensity: response.data.prediction.intensity,
         },
