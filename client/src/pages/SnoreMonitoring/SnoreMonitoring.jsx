@@ -18,6 +18,7 @@ import {
   predictSnore,
 } from "@/api/monitoring";
 import { MONITORING_STATUS, STATUS_CONFIG } from "@/constants/monitoring.js";
+import { useAlarm } from "@/hooks/useAlarm";
 
 const SnoreMonitoring = () => {
   const { user } = useAuth();
@@ -26,6 +27,7 @@ const SnoreMonitoring = () => {
   // const { execute: createSnoreEventAsync } = useAsync(createSnoreEvent);
   // const { execute: createSnoreEventAsync } = useAsync(createAlarmLog);
   const { execute: predictSnoreAsync } = useAsync(predictSnore);
+  const { playAlarm, stopAlarm } = useAlarm();
 
   const [monitoringStatus, setMonitoringStatus] = useState(
     MONITORING_STATUS.IDLE,
@@ -36,6 +38,7 @@ const SnoreMonitoring = () => {
   const reportIdRef = useRef(null);
   const audioChunksRef = useRef([]);
   const snoreStreakRef = useRef(0);
+  const alarmActiveRef = useRef(user?.alarmCondition !== "3");
 
   const currentStatus = STATUS_CONFIG[monitoringStatus];
   const isRunning = monitoringStatus === MONITORING_STATUS.RUNNING;
@@ -115,6 +118,40 @@ const SnoreMonitoring = () => {
       ? onSnoringDetected()
       : onSnoringNotDetected();
   };
+
+  useEffect(() => {
+    if (!alarmActiveRef.current) return;
+
+    const durationBasedAlarm = () => {
+      // 10초 이상 지속
+      if (snoreStreakRef.current > 3) playAlarm();
+    };
+
+    const patternBasedAlarm = () => {
+      // 1분내 5회 이상
+      if (snoreDetections.length < 5) return;
+
+      const lastSnoreTime = snoreDetections.at(-1)?.startedAt;
+      const fifthLastSnoreTime = snoreDetections.at(-5)?.startedAt;
+
+      if (lastSnoreTime - fifthLastSnoreTime < 60 * 1000) playAlarm();
+    };
+
+    switch (user?.alarmCondition) {
+      case 1:
+      case "1":
+        durationBasedAlarm();
+        break;
+
+      case 2:
+      case "2":
+        patternBasedAlarm();
+        break;
+
+      default:
+        break;
+    }
+  }, [snoreDetections, user?.alarmCondition, playAlarm]);
 
   return (
     <main className={styles.screen}>
