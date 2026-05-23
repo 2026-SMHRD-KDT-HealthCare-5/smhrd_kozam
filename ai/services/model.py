@@ -29,11 +29,11 @@ class SnoreModel:
                 self.model = joblib.load(self.model_path)
                 with open(self.label_map_path, "r", encoding="utf-8") as f:
                     self.label_map = {int(k): v for k, v in json.load(f).items()}
-                print(f"✅ Model loaded successfully from {self.model_path}")
+                print(f"[SUCCESS] Model loaded successfully from {self.model_path}")
             else:
-                print(f"⚠️ Model files not found. Expected at:\n  - {self.model_path}\n  - {self.label_map_path}")
+                print(f"[WARN] Model files not found. Expected at:\n  - {self.model_path}\n  - {self.label_map_path}")
         except Exception as e:
-            print(f"❌ Error loading model: {e}")
+            print(f"[ERROR] Error loading model: {e}")
 
     def pad_or_trim(self, audio: np.ndarray, target_length: int = EXPECTED_SAMPLES) -> np.ndarray:
         # 녹음 파일이 2초보다 짧으면 뒤를 0으로 채우고, 길면 2초로 자릅니다.
