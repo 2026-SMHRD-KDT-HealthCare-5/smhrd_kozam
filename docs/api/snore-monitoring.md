@@ -14,12 +14,9 @@ POST /monitoring/sessions
 
 ```json
 {
-  "userId": 1,
   "startedAt": "2026-05-23T22:00:00Z"
 }
 ```
-
-> JWT 적용 후 `userId` 제거 예정
 
 ### res
 
@@ -51,12 +48,9 @@ PATCH /monitoring/sessions/:sessionId/end
 
 ```json
 {
-  "userId": 1,
   "endedAt": "2026-05-24T06:30:00Z"
 }
 ```
-
-> JWT 적용 후 `userId` 제거 예정
 
 ### res
 
@@ -108,14 +102,11 @@ POST /monitoring/sessions/:sessionId/snore-event
 
 ```json
 {
-  "userId": 1,
   "startTime": "2026-05-24T01:12:30Z",
   "endTime": "2026-05-24T01:12:48Z",
   "avgConfidence": 0.82
 }
 ```
-
-> JWT 적용 후 `userId` 제거 예정
 
 ### res
 
@@ -145,12 +136,9 @@ POST /monitoring/sessions/:sessionId/alarm
 
 ```json
 {
-  "userId": 1,
   "triggeredAt": "2026-05-24T01:13:00Z"
 }
 ```
-
-> JWT 적용 후 `userId` 제거 예정
 
 ### res
 
