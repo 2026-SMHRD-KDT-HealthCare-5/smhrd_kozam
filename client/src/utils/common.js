@@ -5,3 +5,5 @@ export const formatTime = (seconds) => {
 
   return `${h}:${m}:${s}`;
 };
+
+export const sleep = (ms) => new Promise((res) => setTimeout(res, ms));

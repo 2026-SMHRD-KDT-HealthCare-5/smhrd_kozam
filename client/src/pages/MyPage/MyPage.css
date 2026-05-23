@@ -8,7 +8,7 @@
   overflow: visible;
   background:
     linear-gradient(rgba(3, 4, 23, 0.75), rgba(3, 4, 23, 0.95)),
-    url("../../assets/images/monitoring_back.png");
+    url("../../assets/images/monitoringBack.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
