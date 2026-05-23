@@ -39,10 +39,12 @@ exports.predictSnore = async (req, res) => {
     if (response.data && response.data.prediction) {
       return res.json({
         success: true,
-        predicted: response.data.prediction.predicted,
-        snore_prob: response.data.prediction.snore_prob,
-        rms: response.data.prediction.rms,
-        intensity: response.data.prediction.intensity,
+        data: {
+          predicted: response.data.prediction.predicted,
+          snore_prob: response.data.prediction.snore_prob,
+          rms: response.data.prediction.rms,
+          intensity: response.data.prediction.intensity,
+        },
       });
     }
 
