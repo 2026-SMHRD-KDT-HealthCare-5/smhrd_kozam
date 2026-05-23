@@ -1,172 +1,219 @@
-import React, { useState, useRef } from "react";
-import axios from "axios";
+import idlePanda from "@/assets/images/idlePanda.png";
+import runningPanda from "@/assets/images/startPanda.png";
+import finishingPanda from "@/assets/images/thinkingPanda.png";
+import stoppedPanda from "@/assets/images/happyPanda.png";
+
+import styles from "./SnoreMonitoring.module.css";
+
+import { Waves, Moon, Sun, Square, ShieldCheck, Mic } from "lucide-react";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import { formatTime } from "client/src/utils/common";
+import { useAuth } from "client/src/hooks/useAuth";
+
+const MONITORING_STATUS = {
+  IDLE: "idle",
+  RUNNING: "running",
+  FINISHING: "finishing",
+  STOPPED: "stopped",
+};
+
+const STATUS_CONFIG = {
+  [MONITORING_STATUS.IDLE]: {
+    text: "모니터링 준비 완료",
+    image: idlePanda,
+    button: {
+      label: "모니터링 시작",
+      description: "클릭하고 수면 분석을 시작해요",
+      icon: Moon,
+    },
+  },
+
+  [MONITORING_STATUS.RUNNING]: {
+    text: "모니터링중",
+    image: runningPanda,
+    button: {
+      label: "모니터링 중지",
+      description: "클릭하고 모니터링을 종료해요",
+      icon: Square,
+    },
+  },
+
+  [MONITORING_STATUS.FINISHING]: {
+    text: "오늘의 수면 AI 분석중...",
+    image: finishingPanda,
+    button: {
+      label: "수면 분석중...",
+      description: "잠시만 기다려주시면 분석 결과가 나옵니다",
+      icon: Square,
+    },
+  },
+
+  [MONITORING_STATUS.STOPPED]: {
+    text: "수면 분석 완료!",
+    image: stoppedPanda,
+    button: {
+      label: "분석 결과 보러가기",
+      description: "클릭하고 오늘의 수면 분석 결과를 확인해요",
+      icon: Sun,
+    },
+  },
+};
+
+const ALARM_CONDITION_TEXT = {
+  1: "지속시간 기반",
+  2: "반복패턴 기반",
+  3: "알람 받지 않음",
+};
 
 const SnoreMonitoring = () => {
-  const [recording, setRecording] = useState(false);
-  const [audioURL, setAudioURL] = useState(null);
-  const [prediction, setPrediction] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
+  const { user } = useAuth();
 
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  const [monitoringStatus, setMonitoringStatus] = useState(
+    MONITORING_STATUS.IDLE,
+  );
 
-      // 💡 웹 브라우저가 가장 안정적으로 지원하는 webm 포맷을 명시합니다.
-      mediaRecorderRef.current = new MediaRecorder(stream, {
-        mimeType: "audio/webm;codecs=opus",
-      });
-      audioChunksRef.current = [];
+  const [snoreDetections, setSnoreDetections] = useState([]);
 
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
+  const sessionIdRef = useRef(null);
+  const snoreStreakRef = useRef(0);
 
-      mediaRecorderRef.current.onstop = () => {
-        // 💡 실제 브라우저가 생성한 타입과 일치시킵니다.
-        const audioBlob = new Blob(audioChunksRef.current, {
-          type: "audio/webm",
-        });
-        const url = URL.createObjectURL(audioBlob);
-        setAudioURL(url);
-      };
+  const currentStatus = STATUS_CONFIG[monitoringStatus];
 
-      mediaRecorderRef.current.start();
-      setRecording(true);
-      setPrediction(null);
-    } catch (err) {
-      console.error("마이크 접근 오류:", err);
-      alert("마이크 접근 권한이 필요합니다.");
-    }
-  };
+  const isRunning = monitoringStatus === MONITORING_STATUS.RUNNING;
 
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && recording) {
-      mediaRecorderRef.current.stop();
-      setRecording(false);
-    }
-  };
+  const isFinishing = monitoringStatus === MONITORING_STATUS.FINISHING;
 
-  const sendToAI = async () => {
-    if (audioChunksRef.current.length === 0) return;
+  const shouldShowTimer = useMemo(() => {
+    return ![MONITORING_STATUS.FINISHING, MONITORING_STATUS.STOPPED].includes(
+      monitoringStatus,
+    );
+  }, [monitoringStatus]);
 
-    setLoading(true);
-    const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-    console.log("blob type:", audioBlob.type);
-    console.log("blob size:", audioBlob.size);
-    const formData = new FormData();
+  const actionButtonClassName =
+    isRunning || isFinishing ? styles.stopAction : styles.startAction;
 
-    // 💡 1. 파이썬 FastAPI가 받는 변수명인 'file'로 매칭합니다.
-    // 💡 2. 확장자를 .webm으로 지정하여 파일의 정체를 명확히 합니다.
-    formData.append("file", audioBlob, "recording.webm");
+  const handleToggleMonitoring = () => {
+    switch (monitoringStatus) {
+      case MONITORING_STATUS.IDLE:
+        setMonitoringStatus(MONITORING_STATUS.RUNNING);
+        break;
 
-    try {
-      // Node.js 백엔드를 통해 AI 서버로 전달
-      const response = await axios.post(
-        "http://localhost:8000/api/ai/predict",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        },
-      );
-      setPrediction(response.data.prediction);
-    } catch (err) {
-      console.error("AI 예측 요청 오류:", err);
-      alert("AI 서버와 통신 중 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
+      case MONITORING_STATUS.RUNNING:
+        setMonitoringStatus(MONITORING_STATUS.FINISHING);
+
+        setTimeout(() => {
+          setMonitoringStatus(MONITORING_STATUS.STOPPED);
+        }, 3000);
+
+        break;
+
+      case MONITORING_STATUS.STOPPED:
+        // TODO: navigate("/history")
+        break;
+
+      default:
+        break;
     }
   };
 
   return (
-    <div style={{ padding: "20px", textAlign: "center" }}>
-      <h1>코골이 모니터링</h1>
+    <main className={styles.screen}>
+      <section className={styles.monitorShell}>
+        <StatusPill text={currentStatus.text} active={isRunning} />
 
-      <div style={{ marginBottom: "20px" }}>
-        {recording ? (
+        <div className={styles.orb}>
+          <img
+            className={`${styles.panda} ${styles.pandaStart}`}
+            src={currentStatus.image}
+            alt={`${monitoringStatus} panda`}
+          />
+
+          {shouldShowTimer && <ElapsedTimer isRunning={isRunning} />}
+        </div>
+
+        <StatsBar
+          snoreCount={snoreDetections.length}
+          alarmCondition={user?.alarmCondition}
+        />
+
+        <div className={styles.controlPanel}>
           <button
-            onClick={stopRecording}
-            style={{
-              padding: "10px 20px",
-              backgroundColor: "#ff4d4d",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer",
-            }}
+            className={actionButtonClassName}
+            onClick={handleToggleMonitoring}
+            disabled={isFinishing}
           >
-            녹음 중지
+            <ActionButtonContent config={currentStatus.button} />
           </button>
-        ) : (
-          <button
-            onClick={startRecording}
-            style={{
-              padding: "10px 20px",
-              backgroundColor: "#4CAF50",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer",
-            }}
-          >
-            녹음 시작
-          </button>
-        )}
+        </div>
+      </section>
+    </main>
+  );
+};
+
+const StatusPill = ({ text, active }) => {
+  return (
+    <div className={styles.statusRow}>
+      <span className={`${styles.pill} ${active ? styles.active : ""}`}>
+        <i />
+        {text}
+      </span>
+    </div>
+  );
+};
+
+const ElapsedTimer = ({ isRunning }) => {
+  const [seconds, setSeconds] = useState(0);
+
+  useEffect(() => {
+    if (!isRunning) return;
+
+    const timer = setInterval(() => {
+      setSeconds((prev) => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isRunning]);
+
+  return (
+    <div className={styles.elapsed}>
+      <Waves />
+      경과 시간
+      <strong>{formatTime(seconds)}</strong>
+    </div>
+  );
+};
+
+const ActionButtonContent = ({ config }) => {
+  const Icon = config.icon;
+
+  return (
+    <>
+      <Icon />
+      {config.label}
+      <small>{config.description}</small>
+    </>
+  );
+};
+
+const StatsBar = ({ snoreCount, alarmCondition }) => {
+  return (
+    <div className={styles.statsBar}>
+      <div>
+        <Mic />
+        코골이 감지
+        <strong>
+          {snoreCount}
+          <small>회</small>
+        </strong>
       </div>
 
-      {audioURL && (
-        <div style={{ marginBottom: "20px" }}>
-          <audio src={audioURL} controls />
-          <br />
-          <button
-            onClick={sendToAI}
-            disabled={loading}
-            style={{
-              marginTop: "10px",
-              padding: "10px 20px",
-              backgroundColor: "#2196F3",
-              color: "white",
-              border: "none",
-              borderRadius: "5px",
-              cursor: loading ? "not-allowed" : "pointer",
-            }}
-          >
-            {loading ? "분석 중..." : "AI 분석 요청"}
-          </button>
-        </div>
-      )}
-
-      {prediction && (
-        <div
-          style={{
-            marginTop: "20px",
-            padding: "15px",
-            border: "1px solid #ddd",
-            borderRadius: "5px",
-            backgroundColor: "#f9f9f9",
-          }}
-        >
-          <h2>분석 결과</h2>
-          <p>
-            <strong>결과:</strong>{" "}
-            {prediction.predicted === "snore"
-              ? "🔴 코골이 감지"
-              : "⚪ 일반 소음"}
-          </p>
-          <p>
-            <strong>코골이 확률:</strong>{" "}
-            {(prediction.snore_prob * 100).toFixed(2)}%
-          </p>
-          <p>
-            <strong>강도(Intensity):</strong> {prediction.intensity}
-          </p>
-        </div>
-      )}
+      <div>
+        <ShieldCheck />
+        알람 조건
+        <strong>{ALARM_CONDITION_TEXT[alarmCondition]}</strong>
+      </div>
     </div>
   );
 };
