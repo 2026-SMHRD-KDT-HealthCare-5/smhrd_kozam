@@ -2,7 +2,7 @@ import idlePanda from "@/assets/images/idlePanda.png";
 import runningPanda from "@/assets/images/startPanda.png";
 import finishingPanda from "@/assets/images/thinkingPanda.png";
 import stoppedPanda from "@/assets/images/happyPanda.png";
-import { Moon, Square, Sun } from "lucide-react";
+import { Moon, Square, Hourglass, Sun } from "lucide-react";
 
 export const MONITORING_STATUS = {
   IDLE: "idle",
@@ -36,7 +36,7 @@ export const STATUS_CONFIG = {
     button: {
       label: "수면 분석중...",
       description: "잠시만 기다려주시면 분석 결과가 나옵니다",
-      icon: Square,
+      icon: Hourglass,
     },
   },
   [MONITORING_STATUS.STOPPED]: {
