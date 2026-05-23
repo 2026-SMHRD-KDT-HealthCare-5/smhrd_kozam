@@ -100,8 +100,16 @@ const SnoreMonitoring = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              whileHover={{
+                scale: 1.03,
+                y: -8,
+                cursor: "pointer",
+              }}
               transition={{
-                opacity: { duration: 0.35 }, // 나타나는 시간
+                type: "spring",
+                stiffness: 300,
+                damping: 20,
+                opacity: { duration: 0.2 },
               }}
             >
               <img
