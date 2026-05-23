@@ -2,10 +2,37 @@ import startPanda from "@/assets/images/startPanda.png";
 import idlePanda from "@/assets/images/idlePanda.png";
 import styles from "./SnoreMonitoring.module.css";
 import { Waves, Moon, Square, ShieldCheck, Mic } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { formatTime } from "client/src/utils/common";
 
 const SnoreMonitoring = () => {
-  const [isRunning, setIsRunning] = useState(true);
+  const [isRunning, setIsRunning] = useState(false);
+  const [reportData, setReportData] = useState({});
+
+  // TODO: 여기부터 하기
+  /* BE 
+    [ session ]
+    📌 post("/session")
+    req.body
+      userId, height, weight, sleepingPosture
+    res.json
+      {
+        ...,
+        data: 
+        {
+          userId: ,
+          sessionId: ,
+          height: ,
+          weight: ,
+          sleepingPosture: ,
+        },
+      };
+
+    📌 fetch("/session")
+    {
+      userId: ,
+    }
+  */
 
   return (
     <main className={styles.screen}>
@@ -25,7 +52,7 @@ const SnoreMonitoring = () => {
           <div className={styles.elapsed}>
             <Waves />
             경과 시간
-            <strong>02:13:47</strong>
+            <Timer isRunning={isRunning} />
           </div>
         </div>
         <StatsBar />
@@ -35,6 +62,10 @@ const SnoreMonitoring = () => {
             onClick={(e) => {
               e.preventDefault();
               setIsRunning(!isRunning);
+
+              if (isRunning) {
+                // 코골이 감지 횟수,
+              }
             }}
           >
             {isRunning ? <Square /> : <Moon />}
@@ -47,6 +78,21 @@ const SnoreMonitoring = () => {
       </section>
     </main>
   );
+};
+
+const Timer = ({ isRunning }) => {
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    if (!isRunning) return;
+
+    const timer = setInterval(() => {
+      setSeconds((prev) => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isRunning]);
+
+  return <strong>{formatTime(seconds)}</strong>;
 };
 
 const StatsBar = () => {
