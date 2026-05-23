@@ -78,7 +78,9 @@ const ALARM_CONDITION_TEXT = {
 const SnoreMonitoring = () => {
   const { user } = useAuth();
   const { execute: createSessionAsync, isLoading } = useAsync(createSession);
+  const { execute: updateSessionAsync } = useAsync(updateSession);
   // const { execute: createSnoreEventAsync } = useAsync(createSnoreEvent);
+  // const { execute: createSnoreEventAsync } = useAsync(createAlarmLog);
 
   const [monitoringStatus, setMonitoringStatus] = useState(
     MONITORING_STATUS.IDLE,
@@ -87,12 +89,12 @@ const SnoreMonitoring = () => {
   const [snoreDetections, setSnoreDetections] = useState([]);
 
   const sessionIdRef = useRef(null);
+  const reportIdRef = useRef(null);
   const snoreStreakRef = useRef(0);
 
   const currentStatus = STATUS_CONFIG[monitoringStatus];
 
   const isRunning = monitoringStatus === MONITORING_STATUS.RUNNING;
-
   const isFinishing = monitoringStatus === MONITORING_STATUS.FINISHING;
 
   const shouldShowTimer =
@@ -111,6 +113,19 @@ const SnoreMonitoring = () => {
     setMonitoringStatus(MONITORING_STATUS.RUNNING);
   };
 
+  const stopSession = async () => {
+    setMonitoringStatus(MONITORING_STATUS.FINISHING);
+
+    const data = await updateSessionAsync(sessionIdRef.current, {
+      endedAt: new Date(),
+    });
+
+    if (!data.success) return;
+
+    reportIdRef.current = data.reportId;
+    setMonitoringStatus(MONITORING_STATUS.STOPPED);
+  };
+
   const handleToggleMonitoring = async () => {
     switch (monitoringStatus) {
       case MONITORING_STATUS.IDLE:
@@ -118,12 +133,7 @@ const SnoreMonitoring = () => {
         break;
 
       case MONITORING_STATUS.RUNNING:
-        setMonitoringStatus(MONITORING_STATUS.FINISHING);
-
-        setTimeout(() => {
-          setMonitoringStatus(MONITORING_STATUS.STOPPED);
-        }, 3000);
-
+        stopSession();
         break;
 
       case MONITORING_STATUS.STOPPED:
