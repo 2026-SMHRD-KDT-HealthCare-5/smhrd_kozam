@@ -34,6 +34,7 @@ const SnoreMonitoring = () => {
     MONITORING_STATUS.IDLE,
   );
   const [snoreDetections, setSnoreDetections] = useState([]);
+  const [isCooldown, setIsCooldown] = useState(false);
 
   const sessionIdRef = useRef(null);
   const reportIdRef = useRef(null);
@@ -42,6 +43,7 @@ const SnoreMonitoring = () => {
   const snoreStreakRef = useRef(0);
   const alarmActiveRef = useRef(user?.alarmCondition !== "3");
   const recordingIntervalRef = useRef(null);
+  const lastAlarmTimeRef = useRef(0);
 
   const currentStatus = STATUS_CONFIG[monitoringStatus];
   const isRunning = monitoringStatus === MONITORING_STATUS.RUNNING;
@@ -183,19 +185,44 @@ const SnoreMonitoring = () => {
   useEffect(() => {
     if (!alarmActiveRef.current) return;
 
+    const triggerAlarmWithCooldown = () => {
+      const now = Date.now();
+      const COOLDOWN_MS = 30 * 60 * 1000;
+
+      if (now - lastAlarmTimeRef.current < COOLDOWN_MS) {
+        return;
+      }
+
+      lastAlarmTimeRef.current = now;
+      setIsCooldown(true);
+      playAlarm();
+
+      setTimeout(() => {
+        setIsCooldown(false);
+      }, COOLDOWN_MS);
+    };
+
     const durationBasedAlarm = () => {
       // 10초 이상 지속
-      if (snoreStreakRef.current > 3) playAlarm();
+      if (snoreStreakRef.current > 3) {
+        triggerAlarmWithCooldown();
+      }
     };
 
     const patternBasedAlarm = () => {
       // 1분내 5회 이상
       if (snoreDetections.length < 5) return;
 
-      const lastSnoreTime = snoreDetections.at(-1)?.startedAt;
-      const fifthLastSnoreTime = snoreDetections.at(-5)?.startedAt;
+      const lastSnoreTime = new Date(
+        snoreDetections.at(-1)?.startedAt,
+      ).getTime();
+      const fifthLastSnoreTime = new Date(
+        snoreDetections.at(-5)?.startedAt,
+      ).getTime();
 
-      if (lastSnoreTime - fifthLastSnoreTime < 60 * 1000) playAlarm();
+      if (lastSnoreTime - fifthLastSnoreTime < 60 * 1000) {
+        triggerAlarmWithCooldown();
+      }
     };
 
     switch (user?.alarmCondition) {
@@ -219,6 +246,20 @@ const SnoreMonitoring = () => {
       {isLoading && <LoadingSpinner />}
       <section className={styles.monitorShell}>
         <StatusPill text={currentStatus.text} active={isRunning} />
+        <div className={styles.cooldownWrapper}>
+          <AnimatePresence>
+            {isCooldown && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className={styles.cooldownBanner}
+              >
+                ⏳ 알람 쿨다운 작동 중 (30분간 방해금지)
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         <div className={styles.orb}>
           <AnimatePresence>
