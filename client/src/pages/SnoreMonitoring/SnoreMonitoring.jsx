@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./SnoreMonitoring.module.css";
 
 import LoadingSpinner from "@/components/Common/LoadingSpinner";
@@ -15,6 +15,7 @@ import {
   createSnoreEvent,
   createSession,
   updateSession,
+  predictSnore,
 } from "@/api/monitoring";
 import { MONITORING_STATUS, STATUS_CONFIG } from "@/constants/monitoring.js";
 
@@ -24,6 +25,7 @@ const SnoreMonitoring = () => {
   const { execute: updateSessionAsync } = useAsync(updateSession);
   // const { execute: createSnoreEventAsync } = useAsync(createSnoreEvent);
   // const { execute: createSnoreEventAsync } = useAsync(createAlarmLog);
+  const { execute: predictSnoreAsync } = useAsync(predictSnore);
 
   const [monitoringStatus, setMonitoringStatus] = useState(
     MONITORING_STATUS.IDLE,
@@ -32,6 +34,7 @@ const SnoreMonitoring = () => {
 
   const sessionIdRef = useRef(null);
   const reportIdRef = useRef(null);
+  const audioChunksRef = useRef([]);
   const snoreStreakRef = useRef(0);
 
   const currentStatus = STATUS_CONFIG[monitoringStatus];
@@ -83,6 +86,34 @@ const SnoreMonitoring = () => {
       default:
         break;
     }
+  };
+
+  const sendAudio = async () => {
+    const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+    const formData = new FormData();
+
+    formData.append("file", audioBlob, "recording.webm");
+
+    const data = await predictSnoreAsync(formData);
+
+    if (!data.success) return;
+
+    const onSnoringDetected = () => {
+      setSnoreDetections([
+        ...snoreDetections,
+        { startedAt: new Date(), confidence: snoreProb },
+      ]);
+
+      snoreStreakRef.current += 1;
+    };
+
+    const onSnoringNotDetected = () => {
+      snoreStreakRef.current = 0;
+    };
+
+    data.data.predicted === "snore"
+      ? onSnoringDetected()
+      : onSnoringNotDetected();
   };
 
   return (
