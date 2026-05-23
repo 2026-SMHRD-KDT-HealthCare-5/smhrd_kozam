@@ -107,8 +107,11 @@ class SnoreModel:
             snore_prob = float(probs[snore_idx]) if snore_idx is not None else 0.0
             rms = float(np.sqrt(np.mean(audio_data ** 2)))
             
-            # 🎯 [수정 포인트] 기본값을 0이 아니라 문자열 등 원하는 형태로 안전하게 먼저 선언합니다.
+            # 기본 강도 및 라벨 설정
             intensity = "normal" 
+
+            if pred_label == "snore" and snore_prob < 0.8:
+                pred_label = "normal"  # 또는 팀원이 정의한 다른 소음 라벨 이름 (예: "ambient")
             
             # 코골이 판단 시 강도 스코어 계산 
             if pred_label == "snore":
