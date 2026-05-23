@@ -7,19 +7,16 @@
 ### Endpoint
 
 ```http
-POST /session
+POST /monitoring/sessions
 ```
 
 ### req
 
 ```json
 {
-  "userId": 1,
   "startedAt": "2026-05-23T22:00:00Z"
 }
 ```
-
-> JWT 적용 후 `userId` 제거 예정
 
 ### res
 
@@ -44,19 +41,16 @@ POST /session
 ### Endpoint
 
 ```http
-PATCH /session/:sessionId/end
+PATCH /monitoring/sessions/:sessionId/end
 ```
 
 ### req
 
 ```json
 {
-  "userId": 1,
   "endedAt": "2026-05-24T06:30:00Z"
 }
 ```
-
-> JWT 적용 후 `userId` 제거 예정
 
 ### res
 
@@ -101,21 +95,18 @@ PATCH /session/:sessionId/end
 ### Endpoint
 
 ```http
-POST /session/:sessionId/snore-event
+POST /monitoring/sessions/:sessionId/snore-event
 ```
 
 ### req
 
 ```json
 {
-  "userId": 1,
   "startTime": "2026-05-24T01:12:30Z",
   "endTime": "2026-05-24T01:12:48Z",
   "avgConfidence": 0.82
 }
 ```
-
-> JWT 적용 후 `userId` 제거 예정
 
 ### res
 
@@ -138,19 +129,16 @@ POST /session/:sessionId/snore-event
 ### Endpoint
 
 ```http
-POST /session/:sessionId/alarm
+POST /monitoring/sessions/:sessionId/alarm
 ```
 
 ### req
 
 ```json
 {
-  "userId": 1,
   "triggeredAt": "2026-05-24T01:13:00Z"
 }
 ```
-
-> JWT 적용 후 `userId` 제거 예정
 
 ### res
 
