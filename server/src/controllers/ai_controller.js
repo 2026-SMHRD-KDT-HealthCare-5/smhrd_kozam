@@ -2,7 +2,7 @@ const axios = require("axios");
 const FormData = require("form-data");
 
 // 🎯 파이썬 FastAPI 서버가 기다리는 진짜 순수 주소로 지정 (/ai 제거)
-const AI_SERVER_URL = "http://127.0.0.1:8000/predict";
+const AI_SERVER_URL = "http://localhost:8000/api/ai/predict";
 
 /**
  * AI 서버에 오디오 파일 예측을 요청하는 컨트롤러
@@ -18,7 +18,7 @@ exports.predictSnore = async (req, res) => {
 
     // AI 서버로 보낼 FormData 생성
     const formData = new FormData();
-    formData.append("file", req.file.buffer, {
+    formData.append("audio", req.file.buffer, {
       filename: req.file.originalname,
       contentType: req.file.mimetype,
     });

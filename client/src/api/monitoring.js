@@ -39,7 +39,7 @@ export const createAlarmLog = async (sessionId, payload) => {
 };
 
 export const predictSnore = async (payload) => {
-  const response = await apiClient.post("/ai/post", payload, {
+  const response = await apiClient.post("/ai/predict", payload, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
