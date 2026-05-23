@@ -6,6 +6,7 @@ import StatusPill from "@/components/SnoreMonitoring/StatusPill";
 import ElapsedTimer from "@/components/SnoreMonitoring/ElapsedTimer";
 import StatsBar from "@/components/SnoreMonitoring/StatsBar";
 import ActionButtonContent from "@/components/SnoreMonitoring/ActionButtonContent";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { useAuth } from "@/hooks/useAuth";
 import { useAsync } from "@/hooks/useAsync";
@@ -91,11 +92,25 @@ const SnoreMonitoring = () => {
         <StatusPill text={currentStatus.text} active={isRunning} />
 
         <div className={styles.orb}>
-          <img
-            className={`${styles.panda} ${styles.pandaStart}`}
-            src={currentStatus.image}
-            alt={`${monitoringStatus} panda`}
-          />
+          <AnimatePresence>
+            <motion.div
+              key={monitoringStatus}
+              className={`${styles.panda} ${styles.pandaStart}`}
+              style={{ x: "-50%" }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{
+                opacity: { duration: 0.35 }, // 나타나는 시간
+              }}
+            >
+              <img
+                src={currentStatus.image}
+                alt={`${monitoringStatus} panda`}
+                style={{ width: "100%", height: "100%", objectFit: "contain" }}
+              />
+            </motion.div>
+          </AnimatePresence>
 
           {shouldShowTimer && <ElapsedTimer isRunning={isRunning} />}
         </div>
