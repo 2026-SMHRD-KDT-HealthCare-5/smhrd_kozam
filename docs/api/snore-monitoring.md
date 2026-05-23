@@ -7,7 +7,7 @@
 ### Endpoint
 
 ```http
-POST /session
+POST /monitoring/sessions
 ```
 
 ### req
@@ -44,7 +44,7 @@ POST /session
 ### Endpoint
 
 ```http
-PATCH /session/:sessionId/end
+PATCH /monitoring/sessions/:sessionId/end
 ```
 
 ### req
@@ -101,7 +101,7 @@ PATCH /session/:sessionId/end
 ### Endpoint
 
 ```http
-POST /session/:sessionId/snore-event
+POST /monitoring/sessions/:sessionId/snore-event
 ```
 
 ### req
@@ -138,7 +138,7 @@ POST /session/:sessionId/snore-event
 ### Endpoint
 
 ```http
-POST /session/:sessionId/alarm
+POST /monitoring/sessions/:sessionId/alarm
 ```
 
 ### req
