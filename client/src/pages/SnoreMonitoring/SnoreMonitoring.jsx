@@ -67,6 +67,7 @@ const SnoreMonitoring = () => {
 
   const stopSession = async () => {
     setMonitoringStatus(MONITORING_STATUS.FINISHING);
+    setIsCooldown(false);
     stopRecording();
 
     const data = await updateSessionAsync(sessionIdRef.current, {
