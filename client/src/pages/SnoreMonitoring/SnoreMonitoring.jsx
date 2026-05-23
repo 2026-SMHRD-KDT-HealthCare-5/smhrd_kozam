@@ -19,6 +19,7 @@ import {
 } from "@/api/monitoring";
 import { MONITORING_STATUS, STATUS_CONFIG } from "@/constants/monitoring.js";
 import { useAlarm } from "@/hooks/useAlarm";
+import { decodeAudio, audioBufferToWav } from "@/utils/audioConverter";
 
 const SnoreMonitoring = () => {
   const { user } = useAuth();
@@ -36,9 +37,11 @@ const SnoreMonitoring = () => {
 
   const sessionIdRef = useRef(null);
   const reportIdRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const snoreStreakRef = useRef(0);
   const alarmActiveRef = useRef(user?.alarmCondition !== "3");
+  const recordingIntervalRef = useRef(null);
 
   const currentStatus = STATUS_CONFIG[monitoringStatus];
   const isRunning = monitoringStatus === MONITORING_STATUS.RUNNING;
@@ -52,20 +55,21 @@ const SnoreMonitoring = () => {
 
   const startSession = async () => {
     const data = await createSessionAsync({ startedAt: new Date() });
-
     if (!data.success) return;
 
     sessionIdRef.current = data.sessionId;
     setMonitoringStatus(MONITORING_STATUS.RUNNING);
+
+    await startRecording();
   };
 
   const stopSession = async () => {
     setMonitoringStatus(MONITORING_STATUS.FINISHING);
+    stopRecording();
 
     const data = await updateSessionAsync(sessionIdRef.current, {
       endedAt: new Date(),
     });
-
     if (!data.success) return;
 
     reportIdRef.current = data.reportId;
@@ -91,32 +95,89 @@ const SnoreMonitoring = () => {
     }
   };
 
-  const sendAudio = async () => {
-    const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-    const formData = new FormData();
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    formData.append("file", audioBlob, "recording.webm");
+      mediaRecorderRef.current = new MediaRecorder(stream, {
+        mimeType: "audio/webm;codecs=opus",
+      });
 
-    const data = await predictSnoreAsync(formData);
+      audioChunksRef.current = [];
 
-    if (!data.success) return;
+      mediaRecorderRef.current.ondataavailable = async (event) => {
+        if (event.data.size > 0) {
+          const singleChunk = [event.data];
+          await sendAudio(singleChunk);
+        }
+      };
 
-    const onSnoringDetected = () => {
-      setSnoreDetections([
-        ...snoreDetections,
-        { startedAt: new Date(), confidence: snoreProb },
-      ]);
+      // 3초마다 명시적으로 중지하고 다시 시작하여 독립적인 파일을 만듭니다.
+      recordingIntervalRef.current = setInterval(() => {
+        if (
+          mediaRecorderRef.current &&
+          mediaRecorderRef.current.state === "recording"
+        ) {
+          mediaRecorderRef.current.stop();
+          mediaRecorderRef.current.start();
+        }
+      }, 3000);
 
-      snoreStreakRef.current += 1;
-    };
+      mediaRecorderRef.current.start();
+    } catch (err) {
+      console.error("마이크 접근 오류:", err);
+    }
+  };
 
-    const onSnoringNotDetected = () => {
-      snoreStreakRef.current = 0;
-    };
+  const stopRecording = () => {
+    if (recordingIntervalRef.current) {
+      clearInterval(recordingIntervalRef.current);
+      recordingIntervalRef.current = null;
+    }
 
-    data.data.predicted === "snore"
-      ? onSnoringDetected()
-      : onSnoringNotDetected();
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state !== "inactive"
+    ) {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream
+        .getTracks()
+        .forEach((track) => track.stop());
+    }
+  };
+
+  const sendAudio = async (chunks) => {
+    if (!chunks || chunks.length === 0) return;
+
+    try {
+      const webmBlob = new Blob(chunks, { type: "audio/webm" });
+      const audioBuffer = await decodeAudio(webmBlob);
+      const wavBlob = audioBufferToWav(audioBuffer);
+
+      const formData = new FormData();
+      formData.append("audio", wavBlob, "recording.wav");
+
+      const data = await predictSnoreAsync(formData);
+      if (!data || !data.success) return;
+
+      const onSnoringDetected = () => {
+        setSnoreDetections((prev) => [
+          ...prev,
+          { startedAt: new Date(), confidence: data.data.snoreProb || 1.0 },
+        ]);
+        snoreStreakRef.current += 1;
+      };
+
+      const onSnoringNotDetected = () => {
+        snoreStreakRef.current = 0;
+      };
+
+      data.data.predicted === "snore"
+        ? onSnoringDetected()
+        : onSnoringNotDetected();
+    } catch (err) {
+      console.error("오디오 분석 준비 중 오류:", err);
+    }
   };
 
   useEffect(() => {
