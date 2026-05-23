@@ -5,12 +5,20 @@ import stoppedPanda from "@/assets/images/happyPanda.png";
 
 import styles from "./SnoreMonitoring.module.css";
 
+import LoadingSpinner from "@/components/Common/LoadingSpinner";
 import { Waves, Moon, Sun, Square, ShieldCheck, Mic } from "lucide-react";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { formatTime } from "client/src/utils/common";
-import { useAuth } from "client/src/hooks/useAuth";
+import { formatTime } from "@/utils/common";
+import { useAuth } from "@/hooks/useAuth";
+import { useAsync } from "@/hooks/useAsync";
+import {
+  createAlarmLog,
+  createSnoreEvent,
+  createSession,
+  updateSession,
+} from "@/api/monitoring";
 
 const MONITORING_STATUS = {
   IDLE: "idle",
@@ -69,6 +77,8 @@ const ALARM_CONDITION_TEXT = {
 
 const SnoreMonitoring = () => {
   const { user } = useAuth();
+  const { execute: createSessionAsync, isLoading } = useAsync(createSession);
+  // const { execute: createSnoreEventAsync } = useAsync(createSnoreEvent);
 
   const [monitoringStatus, setMonitoringStatus] = useState(
     MONITORING_STATUS.IDLE,
@@ -85,19 +95,26 @@ const SnoreMonitoring = () => {
 
   const isFinishing = monitoringStatus === MONITORING_STATUS.FINISHING;
 
-  const shouldShowTimer = useMemo(() => {
-    return ![MONITORING_STATUS.FINISHING, MONITORING_STATUS.STOPPED].includes(
-      monitoringStatus,
-    );
-  }, [monitoringStatus]);
+  const shouldShowTimer =
+    monitoringStatus !== MONITORING_STATUS.FINISHING &&
+    monitoringStatus !== MONITORING_STATUS.STOPPED;
 
   const actionButtonClassName =
     isRunning || isFinishing ? styles.stopAction : styles.startAction;
 
-  const handleToggleMonitoring = () => {
+  const startSession = async () => {
+    const data = await createSessionAsync({ startedAt: new Date() });
+
+    if (!data.success) return;
+
+    sessionIdRef.current = data.sessionId;
+    setMonitoringStatus(MONITORING_STATUS.RUNNING);
+  };
+
+  const handleToggleMonitoring = async () => {
     switch (monitoringStatus) {
       case MONITORING_STATUS.IDLE:
-        setMonitoringStatus(MONITORING_STATUS.RUNNING);
+        await startSession();
         break;
 
       case MONITORING_STATUS.RUNNING:
@@ -120,6 +137,7 @@ const SnoreMonitoring = () => {
 
   return (
     <main className={styles.screen}>
+      {isLoading && <LoadingSpinner />}
       <section className={styles.monitorShell}>
         <StatusPill text={currentStatus.text} active={isRunning} />
 
@@ -142,7 +160,7 @@ const SnoreMonitoring = () => {
           <button
             className={actionButtonClassName}
             onClick={handleToggleMonitoring}
-            disabled={isFinishing}
+            disabled={isFinishing || isLoading}
           >
             <ActionButtonContent config={currentStatus.button} />
           </button>
