@@ -4,6 +4,7 @@ import { getUserById, updateUser } from "@/api/user";
 import { useEffect, useState } from "react";
 import { useAsync } from "@/hooks/useAsync";
 import { useAuth } from "@/hooks/useAuth";
+import { useModal } from "@/contexts/ModalContext";
 
 const postures = ["정자세", "측면자세", "엎드린자세"];
 
@@ -18,6 +19,7 @@ const UserInfo = () => {
   } = useAsync(getUserById, {
     immediate: false,
   });
+  const { openModal } = useModal();
 
   const [posture, setPosture] = useState(null);
 
@@ -37,14 +39,20 @@ const UserInfo = () => {
 
     try {
       const result = await updateUser(updatedData);
-      // TODO: 모달 구현
+
       if (result.success) {
-        alert("정보가 수정되었습니다.");
+        openModal({
+          title: "회원정보 수정 완료",
+          description: "변경한 정보가 정상적으로 저장되었어요.",
+        });
       }
       refreshUser();
     } catch (err) {
+      openModal({
+        title: "회원정보 수정 실패",
+        description: "서버 연결이 원활하지 않아요.\n잠시 후 다시 시도해주세요.",
+      });
       console.error("Failed to update user:", err);
-      alert("정보 수정에 실패했습니다.");
     }
   };
 

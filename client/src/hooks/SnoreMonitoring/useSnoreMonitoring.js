@@ -71,7 +71,7 @@ export function useSnoreMonitoring() {
         openModal({
           title: "마이크 권한 요청",
           description:
-            "녹음 내용은 저장되지 않고 분석에만 이용됩니다. 확인을 누르시면 마이크 권한을 요청합니다.",
+            "코골이 감지를 위해 마이크 권한이 필요해요.\n녹음 데이터는 저장되지 않고 분석에만 사용돼요.",
           onConfirm: async () => {
             const granted = await requestMicPermission();
             resolve(granted);
@@ -86,7 +86,7 @@ export function useSnoreMonitoring() {
         openModal({
           title: "마이크 권한 재설정 요청",
           description:
-            "이전에 권한 요청을 거절한 상태입니다.\n브라우저의 주소창 옆 아이콘을 통해\n직접 권한 재설정 후 시도해주세요.",
+            "브라우저에서 마이크 권한을 다시 허용해야\n모니터링을 시작할 수 있어요.",
           onConfirm: () => resolve(false),
           showCancel: false,
         });
@@ -117,6 +117,7 @@ export function useSnoreMonitoring() {
    * 모니터링 세션 종료
    * 녹음을 중지하고 서버에 세션 종료 정보를 업데이트합니다.
    */
+
   const stopSession = async () => {
     setMonitoringStatus(MONITORING_STATUS.FINISHING);
     setIsCooldown(false);
@@ -147,7 +148,11 @@ export function useSnoreMonitoring() {
         await startSession();
         break;
       case MONITORING_STATUS.RUNNING:
-        setIsStopConfirmOpen(true);
+        openModal({
+          title: "모니터링을 종료하시겠습니까?",
+          description: "확인을 누르시면 모니터링",
+        });
+        await stopSession();
         break;
       case MONITORING_STATUS.STOPPED:
         // TODO: 리포트 상세 이동

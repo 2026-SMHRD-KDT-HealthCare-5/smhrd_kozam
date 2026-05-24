@@ -7,7 +7,7 @@ import {
 } from "@/utils/micPermission";
 import { useAuth } from "@/hooks/useAuth";
 import { updateUser } from "@/api/user";
-import Modal from "@/components/common/Modal";
+import { useModal } from "@/contexts/ModalContext";
 
 const alarmConditions = [
   {
@@ -36,7 +36,7 @@ const MonitoringSetting = () => {
   const [useMic, setUseMic] = useState(false);
   const [alarmOption, setAlarmOption] = useState(null);
   const [micErrorMessage, setMicErrorMessage] = useState("");
-  const [modal, setModal] = useState({});
+  const { openModal } = useModal();
 
   const syncMicPermission = async () => {
     const { state } = await checkMicPermission();
@@ -79,12 +79,10 @@ const MonitoringSetting = () => {
         refreshUser();
       }
     } catch (err) {
-      setModal({
-        ...modal,
-        isOpen: true,
-        title: "요청 실패",
-        description:
-          "서버 문제로 요청에 실패하였습니다.\n다음에 다시 시도해주세요.",
+      openModal({
+        title: "알람조건 변경 실패",
+        description: "서버 연결이 원활하지 않아요.\n잠시 후 다시 시도해주세요.",
+        showCancel: false,
       });
       console.error(err);
     }
@@ -140,14 +138,6 @@ const MonitoringSetting = () => {
       <InfoCard
         title="Kozam은 더 나은 수면을 위해 함께합니다."
         text="모든 설정은 안전하게 보호되며, 언제든 변경할 수 있어요."
-      />
-
-      <Modal
-        open={modal.isOpen}
-        title={modal.title}
-        description={modal.description}
-        onConfirm={() => setModal({ ...Modal, isOpen: false })}
-        showCancel={false}
       />
     </>
   );
