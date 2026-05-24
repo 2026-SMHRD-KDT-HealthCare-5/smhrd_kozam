@@ -103,6 +103,15 @@ export const useSnoreMonitoring = () => {
   };
 
   /**
+   * 캐릭터 버튼 클릭 핸들러
+   * 쿨다운 상태를 켜거나 끄는 동작을 수행합니다.
+   */
+  const handleToggleCooldown = () => {
+    setIsCooldown(!isCooldown);
+    stopAlarm();
+  };
+
+  /**
    * 오디오 녹음 시작
    * 브라우저 마이크 권한을 획득하고 3초 간격으로 오디오 데이터를 분할하여 분석에 전달합니다.
    */
@@ -339,5 +348,6 @@ export const useSnoreMonitoring = () => {
     isLoading,
     user,
     handleToggleMonitoring,
+    handleToggleCooldown,
   };
 };

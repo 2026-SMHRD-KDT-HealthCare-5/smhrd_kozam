@@ -24,6 +24,7 @@ const SnoreMonitoring = () => {
     isLoading,
     user,
     handleToggleMonitoring,
+    handleToggleCooldown,
   } = useSnoreMonitoring();
 
   const currentStatus = STATUS_CONFIG[monitoringStatus];
@@ -57,7 +58,7 @@ const SnoreMonitoring = () => {
           </AnimatePresence>
         </div>
 
-        <div className={styles.orb}>
+        <div className={styles.orb} onClick={handleToggleCooldown}>
           <AnimatePresence mode="wait">
             <motion.div
               key={monitoringStatus}
