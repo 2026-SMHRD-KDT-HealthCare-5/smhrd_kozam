@@ -7,7 +7,7 @@ import {
 } from "@/utils/micPermission";
 import { useAuth } from "@/hooks/useAuth";
 import { updateUser } from "@/api/user";
-import Modal from "@/components/Common/Modal";
+import Modal from "@/components/common/Modal";
 
 const alarmConditions = [
   {

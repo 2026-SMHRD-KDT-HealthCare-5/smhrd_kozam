@@ -2,7 +2,7 @@ import styles from "./SnoreMonitoring.module.css";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Components
-import LoadingSpinner from "@/components/Common/LoadingSpinner";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 import StatusPill from "@/components/SnoreMonitoring/StatusPill";
 import ElapsedTimer from "@/components/SnoreMonitoring/ElapsedTimer";
 import StatsBar from "@/components/SnoreMonitoring/StatsBar";
@@ -10,7 +10,7 @@ import ActionButtonContent from "@/components/SnoreMonitoring/ActionButtonConten
 
 import { useSnoreMonitoring } from "@/hooks/SnoreMonitoring/useSnoreMonitoring";
 import { MONITORING_STATUS, STATUS_CONFIG } from "@/constants/monitoring.js";
-import Modal from "@/components/Common/Modal";
+import Modal from "@/components/common/Modal";
 
 /**
  * 코골이 모니터링 페이지 컴포넌트
