@@ -22,7 +22,7 @@ function App() {
               <Route element={<ProtectedRoute />}>
                 <Route element={<AppMainLayout />}>
                   <Route path="/" element={<SnoreMonitoring />} />
-                  <Route path="/history" element={<SleepingHistory />} />
+                  <Route path="/history/:reportId" element={<SleepingHistory />} />
                   <Route path="/mypage" element={<MyPage />} />
                 </Route>
               </Route>

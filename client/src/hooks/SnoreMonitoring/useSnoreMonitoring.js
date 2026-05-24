@@ -142,7 +142,8 @@ export function useSnoreMonitoring() {
       case MONITORING_STATUS.RUNNING:
         openModal({
           title: "모니터링을 종료할까요?",
-          description: "확인을 누르면 수면 분석이 시작돼요.",
+          description:
+            "확인을 누르면 모니터링을 종료하고\n수면 분석이 시작돼요.",
           onConfirm: async () => {
             closeModal();
             await stopSession();
@@ -150,7 +151,7 @@ export function useSnoreMonitoring() {
         });
         break;
       case MONITORING_STATUS.STOPPED:
-        navigate("/history");
+        navigate(`/history/${reportIdRef.current || ""}`);
         break;
       default:
         break;
