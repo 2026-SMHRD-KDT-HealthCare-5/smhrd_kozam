@@ -3,6 +3,11 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAsync } from "@/hooks/useAsync";
 import { useAlarm } from "@/hooks/SnoreMonitoring/useAlarm";
+import { useModal } from "@/contexts/ModalContext";
+import {
+  checkMicPermission,
+  requestMicPermission,
+} from "@/utils/micPermission";
 import { decodeAudio, audioBufferToWav } from "@/utils/audioConverter";
 import { MONITORING_STATUS } from "@/constants/monitoring.js";
 import {
@@ -13,7 +18,7 @@ import {
   predictSnore,
 } from "@/api/monitoring";
 
-export const useSnoreMonitoring = () => {
+export function useSnoreMonitoring() {
   // --- 사용자 인증 및 API 훅 ---
   const { user } = useAuth();
   const { execute: createSessionAsync, isLoading } = useAsync(createSession);
@@ -22,6 +27,7 @@ export const useSnoreMonitoring = () => {
   const { execute: createAlarmLogAsync } = useAsync(createAlarmLog);
   const { execute: predictSnoreAsync } = useAsync(predictSnore);
   const { playAlarm, stopAlarm } = useAlarm();
+  const { openModal } = useModal();
 
   // --- 상태 관리 ---
   // 현재 모니터링 상태 (대기, 실행 중, 종료 중, 중지됨)
@@ -33,7 +39,10 @@ export const useSnoreMonitoring = () => {
   // 알람 쿨다운 상태 (알람 발생 후 일정 시간 동안 재발생 방지)
   const [isCooldown, setIsCooldown] = useState(false);
   // 세션 종료 확인
+  // TODO: to 공통 모달 처리
   const [isStopConfirmOpen, setIsStopConfirmOpen] = useState(false);
+  // 마이크 권한 상태
+  const [useMic, setUseMic] = useState("");
 
   // --- Refs (리렌더링과 무관하게 유지되어야 하는 값들) ---
   const sessionIdRef = useRef(null);
@@ -52,11 +61,51 @@ export const useSnoreMonitoring = () => {
     confidences: [],
   });
 
+  const handleMicPermission = async () => {
+    const { state } = await checkMicPermission();
+
+    if (state === "granted") return true;
+
+    if (state === "prompt") {
+      return new Promise((resolve) => {
+        openModal({
+          title: "마이크 권한 요청",
+          description:
+            "녹음 내용은 저장되지 않고 분석에만 이용됩니다. 수락하시겠습니까?",
+          onConfirm: async () => {
+            const granted = await requestMicPermission();
+            resolve(granted);
+          },
+          onCancel: async () => {
+            resolve(false);
+          },
+        });
+      });
+    }
+
+    return false;
+
+    // if (state === "granted") {
+    //   setMicErrorMessage(
+    //     "마이크 권한 재설정은 브라우저에서 직접 변경만 가능합니다.",
+    //   );
+    //   return;
+    // }
+
+    // setMicErrorMessage(
+    //   "브라우저에서 직접 마이크 권한 재설정 및 새로고침 후 시도해주세요.",
+    // );
+  };
+
   /**
    * 모니터링 세션 시작
    * 서버에 세션 생성을 요청하고 녹음을 시작합니다.
    */
   const startSession = async () => {
+    const granted = await handleMicPermission();
+
+    if (!granted) return;
+
     const data = await createSessionAsync({ startedAt: new Date() });
     if (!data.success) return;
 
@@ -359,4 +408,4 @@ export const useSnoreMonitoring = () => {
     handleToggleCooldown,
     handleConfirmStopSession,
   };
-};
+}
