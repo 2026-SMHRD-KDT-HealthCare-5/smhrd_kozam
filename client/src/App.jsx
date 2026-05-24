@@ -4,9 +4,10 @@ import ProtectedRoute from "@/router/ProtectedRoute";
 import WebContent from "@/layouts/WebContent/WebContent";
 import AppWrapper from "@/layouts/AppWrapper/AppWrapper";
 import AppMainLayout from "@/layouts/AppMainLayout/AppMainLayout";
-import SnoreMonitoring from "@/pages/SnoreMonitoring/SnoreMonitoring";
 import Login from "@/pages/Login/Login";
+import SnoreMonitoring from "@/pages/SnoreMonitoring/SnoreMonitoring";
 import MyPage from "@/pages/MyPage/MyPage";
+import SleepingHistory from "@/pages/SleepingHistory/SleepingHistory";
 
 function App() {
   return (
@@ -21,7 +22,7 @@ function App() {
               <Route element={<ProtectedRoute />}>
                 <Route element={<AppMainLayout />}>
                   <Route path="/" element={<SnoreMonitoring />} />
-                  {/* History */}
+                  <Route path="/history/:reportId?" element={<SleepingHistory />} />
                   <Route path="/mypage" element={<MyPage />} />
                 </Route>
               </Route>
