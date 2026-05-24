@@ -10,7 +10,6 @@ import ActionButtonContent from "@/components/SnoreMonitoring/ActionButtonConten
 
 import { useSnoreMonitoring } from "@/hooks/SnoreMonitoring/useSnoreMonitoring";
 import { MONITORING_STATUS, STATUS_CONFIG } from "@/constants/monitoring.js";
-import Modal from "@/components/common/Modal";
 
 /**
  * 코골이 모니터링 페이지 컴포넌트
@@ -23,11 +22,9 @@ const SnoreMonitoring = () => {
     snoreDetections,
     isCooldown,
     isLoading,
-    isStopConfirmOpen,
     user,
     handleToggleMonitoring,
     handleToggleCooldown,
-    handleConfirmStopSession,
   } = useSnoreMonitoring();
 
   const currentStatus = STATUS_CONFIG[monitoringStatus];
@@ -108,16 +105,6 @@ const SnoreMonitoring = () => {
       </section>
 
       {isLoading && <LoadingSpinner />}
-      <Modal
-        open={isStopConfirmOpen}
-        title="모니터링을 종료하시겠습니까?"
-        description={
-          "확인을 누르시면 모니터링을 종료하고\n수면 분석이 시작됩니다."
-        }
-        onConfirm={() => handleConfirmStopSession(true)}
-        onCancel={() => handleConfirmStopSession(false)}
-        showCancel={true}
-      />
     </main>
   );
 };

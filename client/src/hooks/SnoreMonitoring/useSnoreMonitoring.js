@@ -27,7 +27,7 @@ export function useSnoreMonitoring() {
   const { execute: createAlarmLogAsync } = useAsync(createAlarmLog);
   const { execute: predictSnoreAsync } = useAsync(predictSnore);
   const { playAlarm, stopAlarm } = useAlarm();
-  const { openModal } = useModal();
+  const { openModal, closeModal } = useModal();
 
   // --- 상태 관리 ---
   // 현재 모니터링 상태 (대기, 실행 중, 종료 중, 중지됨)
@@ -39,10 +39,6 @@ export function useSnoreMonitoring() {
   // 알람 쿨다운 상태 (알람 발생 후 일정 시간 동안 재발생 방지)
   const [isCooldown, setIsCooldown] = useState(false);
   // 세션 종료 확인
-  // TODO: to 공통 모달 처리
-  const [isStopConfirmOpen, setIsStopConfirmOpen] = useState(false);
-  // 마이크 권한 상태
-  const [useMic, setUseMic] = useState("");
 
   // --- Refs (리렌더링과 무관하게 유지되어야 하는 값들) ---
   const sessionIdRef = useRef(null);
@@ -133,11 +129,6 @@ export function useSnoreMonitoring() {
     setMonitoringStatus(MONITORING_STATUS.STOPPED);
   };
 
-  const handleConfirmStopSession = async (isConfirmed) => {
-    setIsStopConfirmOpen(false);
-    if (isConfirmed) await stopSession();
-  };
-
   /**
    * 모니터링 버튼 클릭 핸들러
    * 현재 상태에 따라 시작 또는 종료 동작을 수행합니다.
@@ -149,10 +140,13 @@ export function useSnoreMonitoring() {
         break;
       case MONITORING_STATUS.RUNNING:
         openModal({
-          title: "모니터링을 종료하시겠습니까?",
-          description: "확인을 누르시면 모니터링",
+          title: "모니터링을 종료할까요?",
+          description: "확인을 누르면 수면 분석이 시작돼요.",
+          onConfirm: async () => {
+            closeModal();
+            await stopSession();
+          },
         });
-        await stopSession();
         break;
       case MONITORING_STATUS.STOPPED:
         // TODO: 리포트 상세 이동
@@ -167,6 +161,8 @@ export function useSnoreMonitoring() {
    * 쿨다운 상태를 켜거나 끄는 동작을 수행합니다.
    */
   const handleToggleCooldown = () => {
+    if (monitoringStatus !== MONITORING_STATUS.RUNNING) return;
+
     setIsCooldown(!isCooldown);
     stopAlarm();
   };
@@ -406,10 +402,8 @@ export function useSnoreMonitoring() {
     snoreDetections,
     isCooldown,
     isLoading,
-    isStopConfirmOpen,
     user,
     handleToggleMonitoring,
     handleToggleCooldown,
-    handleConfirmStopSession,
   };
 }
