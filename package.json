@@ -12,7 +12,7 @@
     "start": "concurrently \"npm run start:client\" \"npm run start:server\" \"npm run start:ai\"",
     "start:client": "npm -w client start",
     "start:server": "npm -w server start",
-    "start:ai": "cd ai && .\\venv\\Scripts\\activate && uvicorn main:app --host 127.0.0.1 --port 8000 --reload"
+    "start:ai": "cd ai && .\\.venv\\Scripts\\activate && uvicorn main:app --host 127.0.0.1 --port 8000 --reload"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",

@@ -1,21 +1,17 @@
 .screen {
   position: relative;
-  width: min(100%, 520px);
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
   min-height: 100vh;
   margin: 0 auto;
-  overflow: hidden;
+  overflow: visible;
   background:
-    radial-gradient(
-      circle at 22% 24%,
-      rgba(97, 55, 207, 0.2),
-      transparent 11rem
-    ),
-    radial-gradient(
-      circle at 78% 42%,
-      rgba(156, 78, 255, 0.16),
-      transparent 10rem
-    ),
-    #030417;
+    linear-gradient(rgba(3, 4, 23, 0.75), rgba(3, 4, 23, 0.95)),
+    url("@/assets/images/monitoringBack.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .screen::before {
@@ -94,6 +90,7 @@
   background-image: url("@/assets/images/orbImage.png");
   background-size: cover;
   background-position: center;
+  cursor: pointer;
 }
 
 .orb p {
@@ -312,7 +309,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  padding: 18px 14px;
+  padding: 8px 14px;
   color: #d9d3e7;
   align-items: center;
   justify-content: center;
@@ -343,4 +340,29 @@
 .statsBar em {
   color: #5ce99b;
   font-style: normal;
+}
+
+.cooldownWrapper {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+.cooldownBanner {
+  background-color: #1e1b4b;
+  color: #a5b4fc;
+  border: 1px solid #312e81;
+
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+
+  width: 100%;
+  box-sizing: border-box;
 }

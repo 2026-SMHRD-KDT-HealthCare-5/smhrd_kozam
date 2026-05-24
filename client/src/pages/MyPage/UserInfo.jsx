@@ -4,20 +4,19 @@ import { getUserById, updateUser } from "@/api/user";
 import { useEffect, useState } from "react";
 import { useAsync } from "@/hooks/useAsync";
 import { useAuth } from "@/hooks/useAuth";
+import { useModal } from "@/contexts/ModalContext";
+import { logout } from "@/api/auth";
+import { useNavigate } from "react-router-dom";
 
 const postures = ["정자세", "측면자세", "엎드린자세"];
 
 const UserInfo = () => {
   const { user: authUser, refreshUser } = useAuth();
-  const {
-    data: user,
-    isLoading,
-    isError,
-    error,
-    execute,
-  } = useAsync(getUserById, {
+  const { data: user, execute } = useAsync(getUserById, {
     immediate: false,
   });
+  const { openModal } = useModal();
+  const navigate = useNavigate();
 
   const [posture, setPosture] = useState(null);
 
@@ -37,24 +36,26 @@ const UserInfo = () => {
 
     try {
       const result = await updateUser(updatedData);
-      // TODO: 모달 구현
+
       if (result.success) {
-        alert("정보가 수정되었습니다.");
+        openModal({
+          title: "회원정보 수정 완료",
+          description: "변경한 정보가 정상적으로 저장되었어요.",
+        });
       }
       refreshUser();
     } catch (err) {
+      openModal({
+        title: "회원정보 수정 실패",
+        description: "서버 연결이 원활하지 않아요.\n잠시 후 다시 시도해주세요.",
+      });
       console.error("Failed to update user:", err);
-      alert("정보 수정에 실패했습니다.");
     }
   };
 
   useEffect(() => {
     setPosture(user?.sleepingPosture);
   }, [user]);
-
-  if (isLoading || !user) return <p>로딩중...</p>;
-
-  if (isError) return <p>{error.message}</p>;
 
   return (
     <form onSubmit={handleSubmit}>
@@ -136,8 +137,18 @@ const UserInfo = () => {
         </div>
       </section>
       <div className="footer-actions">
-        {/* <button>취소</button> */}
-        <button>저장하기</button>
+        <button className="submit-button">저장하기</button>
+
+        <button
+          type="button"
+          className="logout-button"
+          onClick={() => {
+            logout();
+            navigate("/login");
+          }}
+        >
+          로그아웃
+        </button>
       </div>
     </form>
   );

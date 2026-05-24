@@ -109,9 +109,6 @@ class SnoreModel:
             
             # 기본 강도 및 라벨 설정
             intensity = "normal" 
-
-            if pred_label == "snore" and snore_prob < 0.8:
-                pred_label = "normal"  # 또는 팀원이 정의한 다른 소음 라벨 이름 (예: "ambient")
             
             # 코골이 판단 시 강도 스코어 계산 
             if pred_label == "snore":
