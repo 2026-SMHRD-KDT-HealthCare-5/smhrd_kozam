@@ -31,7 +31,7 @@ const SnoreMonitoring = () => {
   const { user } = useAuth();
   const { execute: createSessionAsync, isLoading } = useAsync(createSession);
   const { execute: updateSessionAsync } = useAsync(updateSession);
-  // const { execute: createSnoreEventAsync } = useAsync(createSnoreEvent);
+  const { execute: createSnoreEventAsync } = useAsync(createSnoreEvent);
   // const { execute: createSnoreEventAsync } = useAsync(createAlarmLog);
   const { execute: predictSnoreAsync } = useAsync(predictSnore);
   const { playAlarm, stopAlarm } = useAlarm();
@@ -56,6 +56,12 @@ const SnoreMonitoring = () => {
   const recordingIntervalRef = useRef(null); // 녹음 조각 생성을 위한 인터벌
   const lastAlarmTimeRef = useRef(0); // 마지막 알람 발생 시간
   const cooldownTimerRef = useRef(null); // 쿨다운 해제용 타이머
+  const currentStreakRef = useRef({
+    // 현재 진행 중인 연속 코골이 세션
+    startedAt: null,
+    lastDetectedAt: null,
+    confidences: [], // (평균 신뢰도 계산용)
+  });
 
   // --- 파생된 값들 ---
   const currentStatus = STATUS_CONFIG[monitoringStatus];
@@ -89,6 +95,9 @@ const SnoreMonitoring = () => {
     setMonitoringStatus(MONITORING_STATUS.FINISHING);
     setIsCooldown(false);
     stopRecording();
+
+    // 종료 시점에 아직 저장되지 않고 진행 중이던 코골이 세션이 있다면 강제 저장
+    await saveSnoreStreak();
 
     const data = await updateSessionAsync(sessionIdRef.current, {
       endedAt: new Date(),
@@ -202,25 +211,83 @@ const SnoreMonitoring = () => {
       const data = await predictSnoreAsync(formData);
       if (!data || !data.success) return;
 
+      // 이후 처리 로직에서 사용할 변수
+      const now = new Date();
+      const isSnore = data.data.predicted === "snore";
+      const confidence = data.data.snoreProb || 1.0;
+
       const onSnoringDetected = () => {
-        setSnoreDetections((prev) => [
-          ...prev,
-          { startedAt: new Date(), confidence: data.data.snoreProb || 1.0 },
-        ]);
+        if (!currentStreakRef.current.startedAt) {
+          // [CASE A] 새로운 코골이 시작
+          currentStreakRef.current = {
+            startedAt: now,
+            lastDetectedAt: now,
+            confidences: [confidence],
+          };
+        } else {
+          // [CASE B] 기존 코골이 지속 중 (데이터 누적)
+          currentStreakRef.current.lastDetectedAt = now;
+          currentStreakRef.current.confidences.push(confidence);
+        }
+
+        setSnoreDetections((prev) => [...prev, { startedAt: now, confidence }]);
         snoreStreakRef.current += 1;
       };
 
-      const onSnoringNotDetected = () => {
+      const onSnoringNotDetected = async () => {
         snoreStreakRef.current = 0;
+        if (currentStreakRef.current.startedAt) {
+          // 중간에 비코골이가 섞였을 때, 마지막 감지 시점으로부터 30초가 지났는지 확인
+          const gapSeconds =
+            (now.getTime() -
+              currentStreakRef.current.lastDetectedAt.getTime()) /
+            1000;
+
+          if (gapSeconds > 30) {
+            // [CASE C] 30초 넘게 조용함 -> 이전 코골이가 완전히 끝났다고 판단하여 DB 저장
+            await saveSnoreStreak();
+          }
+        }
       };
 
       // AI 예측 결과에 따라 처리
-      data.data.predicted === "snore"
-        ? onSnoringDetected()
-        : onSnoringNotDetected();
+      isSnore ? onSnoringDetected() : onSnoringNotDetected();
     } catch (err) {
       console.error("오디오 분석 준비 중 오류:", err);
     }
+  };
+
+  /**
+   * 기준에 따라 지속되었다고 판단한 코골이 세션을
+   * 서버에 코골이 데이터 저장을 요청
+   */
+  const saveSnoreStreak = async () => {
+    const { startedAt, lastDetectedAt, confidences } = currentStreakRef.current;
+    if (!startedAt) return;
+
+    const durationSeconds =
+      (lastDetectedAt.getTime() - startedAt.getTime()) / 1000;
+
+    // 최소 10초 이상 지속된 경우만 유효한 코골이로 인정하여 DB 저장
+    if (durationSeconds >= 10) {
+      const avgConfidence =
+        confidences.reduce((a, b) => a + b, 0) / confidences.length;
+
+      // 코골이 저장 API 호출
+      const data = await createSnoreEventAsync(sessionIdRef.current, {
+        startedAt,
+        endedAt: lastDetectedAt,
+        avgConfidence: Number(avgConfidence.toFixed(2)),
+      });
+      if (!data.success) return;
+    }
+
+    // 저장 후 다음 묶음을 위해 초기화
+    currentEpisodeRef.current = {
+      startedAt: null,
+      lastDetectedAt: null,
+      confidences: [],
+    };
   };
 
   /**
