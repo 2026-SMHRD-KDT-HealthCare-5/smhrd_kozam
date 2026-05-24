@@ -44,6 +44,7 @@ const SnoreMonitoring = () => {
   const alarmActiveRef = useRef(user?.alarmCondition !== "3");
   const recordingIntervalRef = useRef(null);
   const lastAlarmTimeRef = useRef(0);
+  const cooldownTimerRef = useRef(null);
 
   const currentStatus = STATUS_CONFIG[monitoringStatus];
   const isRunning = monitoringStatus === MONITORING_STATUS.RUNNING;
@@ -198,7 +199,7 @@ const SnoreMonitoring = () => {
       setIsCooldown(true);
       playAlarm();
 
-      setTimeout(() => {
+      cooldownTimerRef.current = setTimeout(() => {
         setIsCooldown(false);
       }, COOLDOWN_MS);
     };
@@ -241,6 +242,31 @@ const SnoreMonitoring = () => {
         break;
     }
   }, [snoreDetections, user?.alarmCondition, playAlarm]);
+
+  useEffect(() => {
+    return () => {
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+
+      if (mediaRecorderRef.current) {
+        if (mediaRecorderRef.current.state !== "inactive") {
+          mediaRecorderRef.current.stop();
+        }
+        if (mediaRecorderRef.current.stream) {
+          mediaRecorderRef.current.stream
+            .getTracks()
+            .forEach((track) => track.stop());
+        }
+      }
+
+      if (cooldownTimerRef.current) {
+        clearTimeout(cooldownTimerRef.current);
+      }
+
+      stopAlarm();
+    };
+  }, [stopAlarm]);
 
   return (
     <main className={styles.screen}>

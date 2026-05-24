@@ -73,7 +73,7 @@ const MonitoringSetting = () => {
       }
     } catch (err) {
       // TODO: 모달 구현
-      console.error("Failed to update alarm settings:", err);
+      alert(`알람 조건 수정에 실패하였습니다: ${err}`);
     }
   };
 
