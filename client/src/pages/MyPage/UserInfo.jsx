@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useAsync } from "@/hooks/useAsync";
 import { useAuth } from "@/hooks/useAuth";
 import { useModal } from "@/contexts/ModalContext";
+import { logout } from "@/api/auth";
+import { useNavigate } from "react-router-dom";
 
 const postures = ["정자세", "측면자세", "엎드린자세"];
 
@@ -20,6 +22,7 @@ const UserInfo = () => {
     immediate: false,
   });
   const { openModal } = useModal();
+  const navigate = useNavigate();
 
   const [posture, setPosture] = useState(null);
 
@@ -144,8 +147,18 @@ const UserInfo = () => {
         </div>
       </section>
       <div className="footer-actions">
-        {/* <button>취소</button> */}
-        <button>저장하기</button>
+        <button className="submit-button">저장하기</button>
+
+        <button
+          type="button"
+          className="logout-button"
+          onClick={() => {
+            logout();
+            navigate("/login");
+          }}
+        >
+          로그아웃
+        </button>
       </div>
     </form>
   );
