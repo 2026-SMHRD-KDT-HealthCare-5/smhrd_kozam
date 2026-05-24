@@ -32,7 +32,7 @@ const SnoreMonitoring = () => {
   const { execute: createSessionAsync, isLoading } = useAsync(createSession);
   const { execute: updateSessionAsync } = useAsync(updateSession);
   const { execute: createSnoreEventAsync } = useAsync(createSnoreEvent);
-  // const { execute: createSnoreEventAsync } = useAsync(createAlarmLog);
+  const { execute: createAlarmLogAsync } = useAsync(createAlarmLog);
   const { execute: predictSnoreAsync } = useAsync(predictSnore);
   const { playAlarm, stopAlarm } = useAlarm();
 
@@ -283,7 +283,7 @@ const SnoreMonitoring = () => {
     }
 
     // 저장 후 다음 묶음을 위해 초기화
-    currentEpisodeRef.current = {
+    currentStreakRef.current = {
       startedAt: null,
       lastDetectedAt: null,
       confidences: [],
@@ -301,7 +301,7 @@ const SnoreMonitoring = () => {
      * 쿨다운을 고려한 알람 실행
      * 알람이 한 번 울리면 30분 동안 다시 울리지 않도록 설정합니다.
      */
-    const triggerAlarmWithCooldown = () => {
+    const triggerAlarmWithCooldown = async () => {
       const now = Date.now();
       const COOLDOWN_MS = 30 * 60 * 1000; // 30분
 
@@ -317,6 +317,11 @@ const SnoreMonitoring = () => {
       cooldownTimerRef.current = setTimeout(() => {
         setIsCooldown(false);
       }, COOLDOWN_MS);
+
+      const data = await createAlarmLogAsync(sessionIdRef.current, {
+        triggeredAt: new Date(),
+      });
+      if (!data.success) return;
     };
 
     /**
