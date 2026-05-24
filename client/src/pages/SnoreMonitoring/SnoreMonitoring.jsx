@@ -8,7 +8,7 @@ import ElapsedTimer from "@/components/SnoreMonitoring/ElapsedTimer";
 import StatsBar from "@/components/SnoreMonitoring/StatsBar";
 import ActionButtonContent from "@/components/SnoreMonitoring/ActionButtonContent";
 
-import { useSnoreMonitoring } from "@/hooks/useSnoreMonitoring";
+import { useSnoreMonitoring } from "@/hooks/SnoreMonitoring/useSnoreMonitoring";
 import { MONITORING_STATUS, STATUS_CONFIG } from "@/constants/monitoring.js";
 
 /**

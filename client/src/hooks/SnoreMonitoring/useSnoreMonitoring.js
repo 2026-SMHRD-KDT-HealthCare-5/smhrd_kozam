@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAsync } from "@/hooks/useAsync";
-import { useAlarm } from "@/hooks/useAlarm";
+import { useAlarm } from "@/hooks/SnoreMonitoring/useAlarm";
 import { decodeAudio, audioBufferToWav } from "@/utils/audioConverter";
 import { MONITORING_STATUS } from "@/constants/monitoring.js";
 import {
