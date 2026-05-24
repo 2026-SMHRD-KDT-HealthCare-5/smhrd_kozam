@@ -21,7 +21,13 @@ import { MONITORING_STATUS, STATUS_CONFIG } from "@/constants/monitoring.js";
 import { useAlarm } from "@/hooks/useAlarm";
 import { decodeAudio, audioBufferToWav } from "@/utils/audioConverter";
 
+/**
+ * 코골이 모니터링 페이지 컴포넌트
+ * 마이크를 통해 실시간으로 오디오를 녹음하고 AI 모델을 통해 코골이를 감지합니다.
+ * 감지된 결과에 따라 사용자 설정에 맞는 알람을 발생시킵니다.
+ */
 const SnoreMonitoring = () => {
+  // --- 사용자 인증 및 API 훅 ---
   const { user } = useAuth();
   const { execute: createSessionAsync, isLoading } = useAsync(createSession);
   const { execute: updateSessionAsync } = useAsync(updateSession);
@@ -30,32 +36,41 @@ const SnoreMonitoring = () => {
   const { execute: predictSnoreAsync } = useAsync(predictSnore);
   const { playAlarm, stopAlarm } = useAlarm();
 
+  // --- 상태 관리 ---
+  // 현재 모니터링 상태 (대기, 실행 중, 종료 중, 중지됨)
   const [monitoringStatus, setMonitoringStatus] = useState(
     MONITORING_STATUS.IDLE,
   );
+  // 감지된 코골이 이벤트 목록
   const [snoreDetections, setSnoreDetections] = useState([]);
+  // 알람 쿨다운 상태 (알람 발생 후 일정 시간 동안 재발생 방지)
   const [isCooldown, setIsCooldown] = useState(false);
 
-  const sessionIdRef = useRef(null);
-  const reportIdRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
-  const snoreStreakRef = useRef(0);
-  const alarmActiveRef = useRef(user?.alarmCondition !== "3");
-  const recordingIntervalRef = useRef(null);
-  const lastAlarmTimeRef = useRef(0);
-  const cooldownTimerRef = useRef(null);
+  // --- Refs (리렌더링과 무관하게 유지되어야 하는 값들) ---
+  const sessionIdRef = useRef(null); // 현재 모니터링 세션 ID
+  const reportIdRef = useRef(null); // 생성된 리포트 ID
+  const mediaRecorderRef = useRef(null); // MediaRecorder 인스턴스
+  const audioChunksRef = useRef([]); // 녹음된 오디오 데이터 조각
+  const snoreStreakRef = useRef(0); // 연속 코골이 횟수 (지속 시간 판단용)
+  const alarmActiveRef = useRef(user?.alarmCondition !== "3"); // 알람 활성화 여부 (사용자 설정)
+  const recordingIntervalRef = useRef(null); // 녹음 조각 생성을 위한 인터벌
+  const lastAlarmTimeRef = useRef(0); // 마지막 알람 발생 시간
+  const cooldownTimerRef = useRef(null); // 쿨다운 해제용 타이머
 
+  // --- 파생된 값들 ---
   const currentStatus = STATUS_CONFIG[monitoringStatus];
   const isRunning = monitoringStatus === MONITORING_STATUS.RUNNING;
   const isFinishing = monitoringStatus === MONITORING_STATUS.FINISHING;
   const shouldShowTimer =
     monitoringStatus !== MONITORING_STATUS.FINISHING &&
     monitoringStatus !== MONITORING_STATUS.STOPPED;
-
   const actionButtonClassName =
     isRunning || isFinishing ? styles.stopAction : styles.startAction;
 
+  /**
+   * 모니터링 세션 시작
+   * 서버에 세션 생성을 요청하고 녹음을 시작합니다.
+   */
   const startSession = async () => {
     const data = await createSessionAsync({ startedAt: new Date() });
     if (!data.success) return;
@@ -66,6 +81,10 @@ const SnoreMonitoring = () => {
     await startRecording();
   };
 
+  /**
+   * 모니터링 세션 종료
+   * 녹음을 중지하고 서버에 세션 종료 정보를 업데이트합니다.
+   */
   const stopSession = async () => {
     setMonitoringStatus(MONITORING_STATUS.FINISHING);
     setIsCooldown(false);
@@ -80,6 +99,10 @@ const SnoreMonitoring = () => {
     setMonitoringStatus(MONITORING_STATUS.STOPPED);
   };
 
+  /**
+   * 모니터링 버튼 클릭 핸들러
+   * 현재 상태에 따라 시작 또는 종료 동작을 수행합니다.
+   */
   const handleToggleMonitoring = async () => {
     switch (monitoringStatus) {
       case MONITORING_STATUS.IDLE:
@@ -91,7 +114,7 @@ const SnoreMonitoring = () => {
         break;
 
       case MONITORING_STATUS.STOPPED:
-        // TODO: navigate("/history")
+        // TODO: 리포트 상세 페이지 등으로 이동 기능 추가 필요
         break;
 
       default:
@@ -99,6 +122,10 @@ const SnoreMonitoring = () => {
     }
   };
 
+  /**
+   * 오디오 녹음 시작
+   * 브라우저 마이크 권한을 획득하고 3초 간격으로 오디오 데이터를 분할하여 분석에 전달합니다.
+   */
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -109,6 +136,7 @@ const SnoreMonitoring = () => {
 
       audioChunksRef.current = [];
 
+      // 데이터 가용 시 분석 함수 호출
       mediaRecorderRef.current.ondataavailable = async (event) => {
         if (event.data.size > 0) {
           const singleChunk = [event.data];
@@ -116,7 +144,7 @@ const SnoreMonitoring = () => {
         }
       };
 
-      // 3초마다 명시적으로 중지하고 다시 시작하여 독립적인 파일을 만듭니다.
+      // 3초마다 명시적으로 중지하고 다시 시작하여 독립적인 분석 단위(WAV) 생성
       recordingIntervalRef.current = setInterval(() => {
         if (
           mediaRecorderRef.current &&
@@ -133,6 +161,9 @@ const SnoreMonitoring = () => {
     }
   };
 
+  /**
+   * 오디오 녹음 중지 및 리소스 해제
+   */
   const stopRecording = () => {
     if (recordingIntervalRef.current) {
       clearInterval(recordingIntervalRef.current);
@@ -150,17 +181,24 @@ const SnoreMonitoring = () => {
     }
   };
 
+  /**
+   * 녹음된 오디오 데이터를 AI 서버로 전송하여 코골이 여부 예측
+   * @param {Blob[]} chunks - 녹음된 오디오 데이터 조각들
+   */
   const sendAudio = async (chunks) => {
     if (!chunks || chunks.length === 0) return;
 
     try {
+      // 1. WebM 데이터를 WAV 형식으로 변환 (서버 분석 요구사항)
       const webmBlob = new Blob(chunks, { type: "audio/webm" });
       const audioBuffer = await decodeAudio(webmBlob);
       const wavBlob = audioBufferToWav(audioBuffer);
 
+      // 2. FormData에 오디오 파일 추가
       const formData = new FormData();
       formData.append("audio", wavBlob, "recording.wav");
 
+      // 3. 서버에 예측 요청
       const data = await predictSnoreAsync(formData);
       if (!data || !data.success) return;
 
@@ -176,6 +214,7 @@ const SnoreMonitoring = () => {
         snoreStreakRef.current = 0;
       };
 
+      // AI 예측 결과에 따라 처리
       data.data.predicted === "snore"
         ? onSnoringDetected()
         : onSnoringNotDetected();
@@ -184,12 +223,20 @@ const SnoreMonitoring = () => {
     }
   };
 
+  /**
+   * 알람 트리거 효과
+   * 코골이 감지 목록이나 사용자 설정이 변경될 때마다 알람 조건을 검사합니다.
+   */
   useEffect(() => {
     if (!alarmActiveRef.current) return;
 
+    /**
+     * 쿨다운을 고려한 알람 실행
+     * 알람이 한 번 울리면 30분 동안 다시 울리지 않도록 설정합니다.
+     */
     const triggerAlarmWithCooldown = () => {
       const now = Date.now();
-      const COOLDOWN_MS = 30 * 60 * 1000;
+      const COOLDOWN_MS = 30 * 60 * 1000; // 30분
 
       if (now - lastAlarmTimeRef.current < COOLDOWN_MS) {
         return;
@@ -199,20 +246,27 @@ const SnoreMonitoring = () => {
       setIsCooldown(true);
       playAlarm();
 
+      // 30분 뒤 쿨다운 해제
       cooldownTimerRef.current = setTimeout(() => {
         setIsCooldown(false);
       }, COOLDOWN_MS);
     };
 
+    /**
+     * 지속 시간 기반 알람 (조건 1)
+     * 코골이가 약 10초 이상(연속 4회 이상 감지) 지속될 경우 알람 발생
+     */
     const durationBasedAlarm = () => {
-      // 10초 이상 지속
       if (snoreStreakRef.current > 3) {
         triggerAlarmWithCooldown();
       }
     };
 
+    /**
+     * 빈도 패턴 기반 알람 (조건 2)
+     * 1분 내에 코골이가 5회 이상 감지될 경우 알람 발생
+     */
     const patternBasedAlarm = () => {
-      // 1분내 5회 이상
       if (snoreDetections.length < 5) return;
 
       const lastSnoreTime = new Date(
@@ -227,6 +281,7 @@ const SnoreMonitoring = () => {
       }
     };
 
+    // 사용자 설정에 따른 알람 로직 실행
     switch (user?.alarmCondition) {
       case 1:
       case "1":
@@ -243,6 +298,10 @@ const SnoreMonitoring = () => {
     }
   }, [snoreDetections, user?.alarmCondition, playAlarm]);
 
+  /**
+   * 컴포넌트 언마운트 시 정리 작업
+   * 모든 인터벌, 타이머, 녹음 리소스 및 알람을 중지합니다.
+   */
   useEffect(() => {
     return () => {
       if (recordingIntervalRef.current) {
@@ -270,9 +329,14 @@ const SnoreMonitoring = () => {
 
   return (
     <main className={styles.screen}>
+      {/* 로딩 상태 표시 */}
       {isLoading && <LoadingSpinner />}
+
       <section className={styles.monitorShell}>
+        {/* 현재 상태 표시 (Pill UI) */}
         <StatusPill text={currentStatus.text} active={isRunning} />
+
+        {/* 알람 쿨다운 안내 배너 */}
         <div className={styles.cooldownWrapper}>
           <AnimatePresence>
             {isCooldown && (
@@ -288,8 +352,9 @@ const SnoreMonitoring = () => {
           </AnimatePresence>
         </div>
 
+        {/* 중앙 판다 캐릭터 및 타이머 영역 */}
         <div className={styles.orb}>
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             <motion.div
               key={monitoringStatus}
               className={`${styles.panda} ${styles.pandaStart}`}
@@ -317,14 +382,17 @@ const SnoreMonitoring = () => {
             </motion.div>
           </AnimatePresence>
 
+          {/* 실행 중이거나 중지된 경우 타이머 표시 */}
           {shouldShowTimer && <ElapsedTimer isRunning={isRunning} />}
         </div>
 
+        {/* 통계 바 (감지 횟수 및 설정 정보) */}
         <StatsBar
           snoreCount={snoreDetections.length}
           alarmCondition={user?.alarmCondition}
         />
 
+        {/* 제어 패널 (시작/중지 버튼) */}
         <div className={styles.controlPanel}>
           <button
             className={actionButtonClassName}
