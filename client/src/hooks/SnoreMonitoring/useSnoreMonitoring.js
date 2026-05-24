@@ -71,30 +71,29 @@ export function useSnoreMonitoring() {
         openModal({
           title: "마이크 권한 요청",
           description:
-            "녹음 내용은 저장되지 않고 분석에만 이용됩니다. 수락하시겠습니까?",
+            "녹음 내용은 저장되지 않고 분석에만 이용됩니다. 확인을 누르시면 마이크 권한을 요청합니다.",
           onConfirm: async () => {
             const granted = await requestMicPermission();
             resolve(granted);
           },
-          onCancel: async () => {
-            resolve(false);
-          },
+          onCancel: () => resolve(false),
+        });
+      });
+    }
+
+    if (state == "denied") {
+      return new Promise((resolve) => {
+        openModal({
+          title: "마이크 권한 재설정 요청",
+          description:
+            "이전에 권한 요청을 거절한 상태입니다.\n브라우저의 주소창 옆 아이콘을 통해\n직접 권한 재설정 후 시도해주세요.",
+          onConfirm: () => resolve(false),
+          showCancel: false,
         });
       });
     }
 
     return false;
-
-    // if (state === "granted") {
-    //   setMicErrorMessage(
-    //     "마이크 권한 재설정은 브라우저에서 직접 변경만 가능합니다.",
-    //   );
-    //   return;
-    // }
-
-    // setMicErrorMessage(
-    //   "브라우저에서 직접 마이크 권한 재설정 및 새로고침 후 시도해주세요.",
-    // );
   };
 
   /**
