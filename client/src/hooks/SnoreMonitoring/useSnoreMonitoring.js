@@ -32,6 +32,8 @@ export const useSnoreMonitoring = () => {
   const [snoreDetections, setSnoreDetections] = useState([]);
   // 알람 쿨다운 상태 (알람 발생 후 일정 시간 동안 재발생 방지)
   const [isCooldown, setIsCooldown] = useState(false);
+  // 세션 종료 확인
+  const [isStopConfirmOpen, setIsStopConfirmOpen] = useState(false);
 
   // --- Refs (리렌더링과 무관하게 유지되어야 하는 값들) ---
   const sessionIdRef = useRef(null);
@@ -82,6 +84,11 @@ export const useSnoreMonitoring = () => {
     setMonitoringStatus(MONITORING_STATUS.STOPPED);
   };
 
+  const handleConfirmStopSession = async (isConfirmed) => {
+    setIsStopConfirmOpen(false);
+    if (isConfirmed) await stopSession();
+  };
+
   /**
    * 모니터링 버튼 클릭 핸들러
    * 현재 상태에 따라 시작 또는 종료 동작을 수행합니다.
@@ -92,7 +99,7 @@ export const useSnoreMonitoring = () => {
         await startSession();
         break;
       case MONITORING_STATUS.RUNNING:
-        await stopSession();
+        setIsStopConfirmOpen(true);
         break;
       case MONITORING_STATUS.STOPPED:
         // TODO: 리포트 상세 이동
@@ -346,8 +353,10 @@ export const useSnoreMonitoring = () => {
     snoreDetections,
     isCooldown,
     isLoading,
+    isStopConfirmOpen,
     user,
     handleToggleMonitoring,
     handleToggleCooldown,
+    handleConfirmStopSession,
   };
 };

@@ -10,6 +10,7 @@ import ActionButtonContent from "@/components/SnoreMonitoring/ActionButtonConten
 
 import { useSnoreMonitoring } from "@/hooks/SnoreMonitoring/useSnoreMonitoring";
 import { MONITORING_STATUS, STATUS_CONFIG } from "@/constants/monitoring.js";
+import Modal from "@/components/Common/Modal";
 
 /**
  * 코골이 모니터링 페이지 컴포넌트
@@ -22,9 +23,11 @@ const SnoreMonitoring = () => {
     snoreDetections,
     isCooldown,
     isLoading,
+    isStopConfirmOpen,
     user,
     handleToggleMonitoring,
     handleToggleCooldown,
+    handleConfirmStopSession,
   } = useSnoreMonitoring();
 
   const currentStatus = STATUS_CONFIG[monitoringStatus];
@@ -39,6 +42,16 @@ const SnoreMonitoring = () => {
   return (
     <main className={styles.screen}>
       {isLoading && <LoadingSpinner />}
+      <Modal
+        open={isStopConfirmOpen}
+        title="title"
+        description="description"
+        // onConfirm={handleConfirm}
+        // onCancel={handleCancel}
+        onConfirm={() => handleConfirmStopSession(true)}
+        onCancel={() => handleConfirmStopSession(false)}
+        showCancel={true}
+      />
 
       <section className={styles.monitorShell}>
         <StatusPill text={currentStatus.text} active={isRunning} />
