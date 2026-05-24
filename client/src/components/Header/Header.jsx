@@ -21,11 +21,7 @@ const Header = () => {
       <div className="header-actions">
         <button
           className="icon-btn"
-          // onClick={() => navigate("/history")}
-          onClick={() => {
-            logout();
-            navigate("/login");
-          }}
+          onClick={() => navigate("/history")}
           aria-label="히스토리로 이동"
         >
           <BarChart3 />

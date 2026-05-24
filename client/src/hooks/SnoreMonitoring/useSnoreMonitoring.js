@@ -1,5 +1,5 @@
-// hooks/useSnoreMonitoring.js
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAsync } from "@/hooks/useAsync";
 import { useAlarm } from "@/hooks/SnoreMonitoring/useAlarm";
@@ -19,7 +19,8 @@ import {
 } from "@/api/monitoring";
 
 export function useSnoreMonitoring() {
-  // --- 사용자 인증 및 API 훅 ---
+  // --- 사용자 인증 및 훅 ---
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { execute: createSessionAsync, isLoading } = useAsync(createSession);
   const { execute: updateSessionAsync } = useAsync(updateSession);
@@ -149,7 +150,7 @@ export function useSnoreMonitoring() {
         });
         break;
       case MONITORING_STATUS.STOPPED:
-        // TODO: 리포트 상세 이동
+        navigate("/history");
         break;
       default:
         break;
