@@ -7,6 +7,7 @@ import {
 } from "@/utils/micPermission";
 import { useAuth } from "@/hooks/useAuth";
 import { updateUser } from "@/api/user";
+import Modal from "@/components/Common/Modal";
 
 const alarmConditions = [
   {
@@ -35,6 +36,7 @@ const MonitoringSetting = () => {
   const [useMic, setUseMic] = useState(false);
   const [alarmOption, setAlarmOption] = useState(null);
   const [micErrorMessage, setMicErrorMessage] = useState("");
+  const [modal, setModal] = useState({});
 
   const syncMicPermission = async () => {
     const { state } = await checkMicPermission();
@@ -77,8 +79,14 @@ const MonitoringSetting = () => {
         refreshUser();
       }
     } catch (err) {
-      // TODO: 모달 구현
-      alert(`알람 조건 수정에 실패하였습니다: ${err}`);
+      setModal({
+        ...modal,
+        isOpen: true,
+        title: "요청 실패",
+        description:
+          "서버 문제로 요청에 실패하였습니다.\n다음에 다시 시도해주세요.",
+      });
+      console.error(err);
     }
   };
 
@@ -101,7 +109,6 @@ const MonitoringSetting = () => {
           </h2>
           <p>AI 코골이 감지를 위해 마이크를 사용해요.</p>
 
-          {/* <p className={styles.errorMessage}>{micErrorMessage}</p> */}
           <p
             className={`${styles.errorMessage} ${micErrorMessage ? styles.active : ""}`}
           >
@@ -133,6 +140,14 @@ const MonitoringSetting = () => {
       <InfoCard
         title="Kozam은 더 나은 수면을 위해 함께합니다."
         text="모든 설정은 안전하게 보호되며, 언제든 변경할 수 있어요."
+      />
+
+      <Modal
+        open={modal.isOpen}
+        title={modal.title}
+        description={modal.description}
+        onConfirm={() => setModal({ ...Modal, isOpen: false })}
+        showCancel={false}
       />
     </>
   );

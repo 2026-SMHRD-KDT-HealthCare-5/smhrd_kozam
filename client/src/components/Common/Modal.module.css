@@ -28,6 +28,10 @@
   animation: modalShow 0.2s ease;
 }
 
+.content {
+  white-space: pre-line;
+}
+
 .content h2 {
   margin: 0;
   color: white;

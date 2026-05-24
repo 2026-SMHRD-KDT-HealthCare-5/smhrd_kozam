@@ -41,18 +41,6 @@ const SnoreMonitoring = () => {
 
   return (
     <main className={styles.screen}>
-      {isLoading && <LoadingSpinner />}
-      <Modal
-        open={isStopConfirmOpen}
-        title="title"
-        description="description"
-        // onConfirm={handleConfirm}
-        // onCancel={handleCancel}
-        onConfirm={() => handleConfirmStopSession(true)}
-        onCancel={() => handleConfirmStopSession(false)}
-        showCancel={true}
-      />
-
       <section className={styles.monitorShell}>
         <StatusPill text={currentStatus.text} active={isRunning} />
 
@@ -118,6 +106,18 @@ const SnoreMonitoring = () => {
           </button>
         </div>
       </section>
+
+      {isLoading && <LoadingSpinner />}
+      <Modal
+        open={isStopConfirmOpen}
+        title="모니터링을 종료하시겠습니까?"
+        description={
+          "확인을 누르시면 모니터링을 종료하고\n수면 분석이 시작됩니다."
+        }
+        onConfirm={() => handleConfirmStopSession(true)}
+        onCancel={() => handleConfirmStopSession(false)}
+        showCancel={true}
+      />
     </main>
   );
 };
