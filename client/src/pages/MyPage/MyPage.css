@@ -8,22 +8,10 @@
   overflow: visible;
   background:
     linear-gradient(rgba(3, 4, 23, 0.75), rgba(3, 4, 23, 0.95)),
-    url("../../assets/images/monitoringBack.png");
+    url("@/assets/images/monitoringBack.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  /* background:
-    radial-gradient(
-      circle at 22% 24%,
-      rgba(97, 55, 207, 0.2),
-      transparent 11rem
-    ),
-    radial-gradient(
-      circle at 78% 42%,
-      rgba(156, 78, 255, 0.16),
-      transparent 10rem
-    ),
-    #030417; */
 }
 
 .content-stack {

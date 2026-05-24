@@ -5,7 +5,7 @@ const SleepingHistory = () => {
   const { reportId: initialReportId } = useParams();
   
   return (
-    <div>SleepingHistory</div>
+    <div className={styles.screen}>SleepingHistory</div>
   )
 }
 

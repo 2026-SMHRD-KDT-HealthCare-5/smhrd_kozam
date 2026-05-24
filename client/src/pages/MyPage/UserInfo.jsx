@@ -12,13 +12,7 @@ const postures = ["정자세", "측면자세", "엎드린자세"];
 
 const UserInfo = () => {
   const { user: authUser, refreshUser } = useAuth();
-  const {
-    data: user,
-    isLoading,
-    isError,
-    error,
-    execute,
-  } = useAsync(getUserById, {
+  const { data: user, execute } = useAsync(getUserById, {
     immediate: false,
   });
   const { openModal } = useModal();
@@ -62,10 +56,6 @@ const UserInfo = () => {
   useEffect(() => {
     setPosture(user?.sleepingPosture);
   }, [user]);
-
-  if (isLoading || !user) return <p>로딩중...</p>;
-
-  if (isError) return <p>{error.message}</p>;
 
   return (
     <form onSubmit={handleSubmit}>
