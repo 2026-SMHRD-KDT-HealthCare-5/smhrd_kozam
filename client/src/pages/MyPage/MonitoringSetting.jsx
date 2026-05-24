@@ -30,10 +30,11 @@ const alarmConditions = [
 ];
 
 const MonitoringSetting = () => {
+  const { user, refreshUser } = useAuth();
+
   const [useMic, setUseMic] = useState(false);
   const [alarmOption, setAlarmOption] = useState(null);
-
-  const { user, refreshUser } = useAuth();
+  const [micErrorMessage, setMicErrorMessage] = useState("");
 
   const syncMicPermission = async () => {
     const { state } = await checkMicPermission();
@@ -46,18 +47,22 @@ const MonitoringSetting = () => {
 
     if (state === "prompt") {
       const granted = await requestMicPermission();
-
       setUseMic(granted);
+      if (!granted) return;
+      setMicErrorMessage("");
       return;
     }
 
     if (state === "granted") {
-      console.log("마이크 권한 재설정은 브라우저에서 직접 변경만 가능합니다.");
-
+      setMicErrorMessage(
+        "마이크 권한 재설정은 브라우저에서 직접 변경만 가능합니다.",
+      );
       return;
     }
 
-    console.log("브라우저에서 직접 마이크 권한 재설정 후 시도해주세요.");
+    setMicErrorMessage(
+      "브라우저에서 직접 마이크 권한 재설정 및 새로고침 후 시도해주세요.",
+    );
   };
 
   const handleAlarmOption = async (alarmCondition) => {
@@ -94,8 +99,14 @@ const MonitoringSetting = () => {
           <h2>
             마이크 권한 <span>(모니터링)</span>
           </h2>
-
           <p>AI 코골이 감지를 위해 마이크를 사용해요.</p>
+
+          {/* <p className={styles.errorMessage}>{micErrorMessage}</p> */}
+          <p
+            className={`${styles.errorMessage} ${micErrorMessage ? styles.active : ""}`}
+          >
+            {micErrorMessage || "\u00A0"}
+          </p>
         </div>
 
         <Toggle isOn={useMic} onToggle={handleMicToggle} />
@@ -105,7 +116,6 @@ const MonitoringSetting = () => {
         <h2>
           알람 발생 조건 <span>?</span>
         </h2>
-
         <p>어떤 상황에서 알람을 받을지 선택하세요.</p>
 
         {alarmConditions.map((condition) => (

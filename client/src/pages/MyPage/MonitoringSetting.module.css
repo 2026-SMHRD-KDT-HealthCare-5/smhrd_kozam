@@ -274,3 +274,20 @@
   background-color: #f3f4f6; /* gray-100 */
   box-shadow: none;
 }
+
+.micCard .errorMessage {
+  color: #ff4d4f;
+  font-size: 10px;
+  font-weight: 300;
+
+  opacity: 0;
+  transform: translateY(-4px); /* 살짝 위에서 내려오는 효과용 */
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.micCard .errorMessage.active {
+  opacity: 1;
+  transform: translateY(0);
+}
