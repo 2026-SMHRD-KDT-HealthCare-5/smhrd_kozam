@@ -27,7 +27,7 @@ export function useSnoreMonitoring() {
   const { execute: createSnoreEventAsync } = useAsync(createSnoreEvent);
   const { execute: createAlarmLogAsync } = useAsync(createAlarmLog);
   const { execute: predictSnoreAsync } = useAsync(predictSnore);
-  const { playAlarm, stopAlarm } = useAlarm();
+  const { playAlarm, stopAlarm, isPlayingAlarm } = useAlarm();
   const { openModal, closeModal } = useModal();
 
   // --- 상태 관리 ---
@@ -52,11 +52,17 @@ export function useSnoreMonitoring() {
   const lastAlarmTimeRef = useRef(0);
   const cooldownTimerRef = useRef(null);
   const currentStreakRef = useRef({
-    // 현재 진행 중인 연속 코골이 세션
+    // 현재 진행 중인 연속 코골이 세션 (저장을 위한 연속 판단용)
     startedAt: null,
     lastDetectedAt: null,
     confidences: [],
   });
+  const patternValidSince = useRef(new Date());
+
+  const initValidRefs = () => {
+    snoreStreakRef.current = 0;
+    patternValidSince.current = new Date();
+  };
 
   const handleMicPermission = async () => {
     const { state } = await checkMicPermission();
@@ -116,6 +122,7 @@ export function useSnoreMonitoring() {
    */
 
   const stopSession = async () => {
+    if (isPlayingAlarm) stopAlarm();
     setMonitoringStatus(MONITORING_STATUS.FINISHING);
     setIsCooldown(false);
     stopRecording();
@@ -165,8 +172,22 @@ export function useSnoreMonitoring() {
   const handleToggleCooldown = () => {
     if (monitoringStatus !== MONITORING_STATUS.RUNNING) return;
 
-    setIsCooldown(!isCooldown);
-    stopAlarm();
+    if (isPlayingAlarm) {
+      stopAlarm();
+      return;
+    } else {
+      if (isCooldown) {
+        initValidRefs();
+        clearTimeout(cooldownTimerRef.current);
+      } else {
+        cooldownTimerRef.current = setTimeout(
+          () => setIsCooldown(false),
+          COOLDOWN_MS,
+        );
+      }
+
+      setIsCooldown(!isCooldown);
+    }
   };
 
   /**
@@ -327,7 +348,8 @@ export function useSnoreMonitoring() {
     const triggerAlarmWithCooldown = async () => {
       const now = Date.now();
       const COOLDOWN_MS = 30 * 60 * 1000;
-      if (now - lastAlarmTimeRef.current < COOLDOWN_MS) return;
+
+      if (isCooldown && now - lastAlarmTimeRef.current < COOLDOWN_MS) return;
 
       lastAlarmTimeRef.current = now;
       setIsCooldown(true);
@@ -357,12 +379,16 @@ export function useSnoreMonitoring() {
      */
     const patternBasedAlarm = () => {
       if (snoreDetections.length < 5) return;
+
       const lastSnoreTime = new Date(
         snoreDetections.at(-1)?.startedAt,
       ).getTime();
       const fifthLastSnoreTime = new Date(
         snoreDetections.at(-5)?.startedAt,
       ).getTime();
+
+      if (fifthLastSnoreTime < patternValidSince.current) return;
+
       if (lastSnoreTime - fifthLastSnoreTime < 60 * 1000)
         triggerAlarmWithCooldown();
     };
