@@ -52,5 +52,7 @@ export function useAlarm(soundType = "bird") {
     }
   }, []);
 
-  return { playAlarm, stopAlarm };
+  const isPlayingAlarm = () => isPlayingRef.current;
+
+  return { playAlarm, stopAlarm, isPlayingAlarm };
 }
