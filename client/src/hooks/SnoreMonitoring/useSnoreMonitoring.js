@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAsync } from "@/hooks/useAsync";
@@ -18,59 +18,62 @@ import {
   predictSnore,
 } from "@/api/monitoring";
 
+// --- 상수 정의 ---
+const RECORDING_INTERVAL_MS = 3000;
+const SNORE_GAP_LIMIT_SECONDS = 30;
+const SNORE_MIN_DURATION_SECONDS = 10;
+const ALARM_COOLDOWN_MS = 30 * 60 * 1000; // 30분
+
 export function useSnoreMonitoring() {
-  // --- 사용자 인증 및 훅 ---
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { openModal, closeModal } = useModal();
+  const { playAlarm, stopAlarm, isPlayingAlarm } = useAlarm();
+
+  // --- API 비동기 훅 ---
   const { execute: createSessionAsync, isLoading } = useAsync(createSession);
   const { execute: updateSessionAsync } = useAsync(updateSession);
   const { execute: createSnoreEventAsync } = useAsync(createSnoreEvent);
   const { execute: createAlarmLogAsync } = useAsync(createAlarmLog);
   const { execute: predictSnoreAsync } = useAsync(predictSnore);
-  const { playAlarm, stopAlarm, isPlayingAlarm } = useAlarm();
-  const { openModal, closeModal } = useModal();
 
   // --- 상태 관리 ---
-  // 현재 모니터링 상태 (대기, 실행 중, 종료 중, 중지됨)
   const [monitoringStatus, setMonitoringStatus] = useState(
     MONITORING_STATUS.IDLE,
   );
-  // 감지된 코골이 이벤트 목록
   const [snoreDetections, setSnoreDetections] = useState([]);
-  // 알람 쿨다운 상태 (알람 발생 후 일정 시간 동안 재발생 방지)
   const [isCooldown, setIsCooldown] = useState(false);
-  // 세션 종료 확인
 
-  // --- Refs (리렌더링과 무관하게 유지되어야 하는 값들) ---
+  // --- Refs ---
   const sessionIdRef = useRef(null);
   const reportIdRef = useRef(null);
   const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
-  const snoreStreakRef = useRef(0); // 연속 코골이 횟수 (지속 시간 판단용)
-  const alarmActiveRef = useRef(user?.alarmCondition !== "3");
   const recordingIntervalRef = useRef(null);
-  const lastAlarmTimeRef = useRef(0);
   const cooldownTimerRef = useRef(null);
+
+  const snoreStreakRef = useRef(0);
+  const lastAlarmTimeRef = useRef(0);
+  const patternValidSince = useRef(new Date());
+  const alarmActiveRef = useRef(user?.alarmCondition !== "3");
+
   const currentStreakRef = useRef({
-    // 현재 진행 중인 연속 코골이 세션 (저장을 위한 연속 판단용)
     startedAt: null,
     lastDetectedAt: null,
     confidences: [],
   });
-  const patternValidSince = useRef(new Date());
 
-  const initValidRefs = () => {
+  // --- 헬퍼 함수 ---
+  const initValidRefs = useCallback(() => {
     snoreStreakRef.current = 0;
     patternValidSince.current = new Date();
-  };
+  }, []);
 
   const handleMicPermission = async () => {
     const { state } = await checkMicPermission();
-
     if (state === "granted") return true;
 
-    if (state === "prompt") {
-      return new Promise((resolve) => {
+    return new Promise((resolve) => {
+      if (state === "prompt") {
         openModal({
           title: "마이크 권한 요청",
           description:
@@ -81,11 +84,7 @@ export function useSnoreMonitoring() {
           },
           onCancel: () => resolve(false),
         });
-      });
-    }
-
-    if (state == "denied") {
-      return new Promise((resolve) => {
+      } else if (state === "denied") {
         openModal({
           title: "마이크 권한 재설정 요청",
           description:
@@ -93,23 +92,153 @@ export function useSnoreMonitoring() {
           onConfirm: () => resolve(false),
           showCancel: false,
         });
-      });
-    }
-
-    return false;
+      } else {
+        resolve(false);
+      }
+    });
   };
 
   /**
-   * 모니터링 세션 시작
-   * 서버에 세션 생성을 요청하고 녹음을 시작합니다.
+   * 지속 시간 조건 충족 시 코골이 세션 저장
+   */
+  const saveSnoreStreak = useCallback(async () => {
+    const { startedAt, lastDetectedAt, confidences } = currentStreakRef.current;
+    if (!startedAt || !lastDetectedAt) return;
+
+    const durationSeconds =
+      (lastDetectedAt.getTime() - startedAt.getTime()) / 1000;
+
+    if (durationSeconds >= SNORE_MIN_DURATION_SECONDS && sessionIdRef.current) {
+      const avgConfidence =
+        confidences.reduce((a, b) => a + b, 0) / confidences.length;
+
+      await createSnoreEventAsync(sessionIdRef.current, {
+        startedAt,
+        endedAt: lastDetectedAt,
+        avgConfidence: Number(avgConfidence.toFixed(2)),
+      });
+    }
+
+    currentStreakRef.current = {
+      startedAt: null,
+      lastDetectedAt: null,
+      confidences: [],
+    };
+  }, [createSnoreEventAsync]);
+
+  /**
+   * AI 분석을 위해 오디오 데이터 전송 및 결과 처리
+   */
+  const sendAudio = useCallback(
+    async (chunks) => {
+      if (!chunks?.length) return;
+      try {
+        const webmBlob = new Blob(chunks, { type: "audio/webm" });
+        const audioBuffer = await decodeAudio(webmBlob);
+        const wavBlob = audioBufferToWav(audioBuffer);
+
+        const formData = new FormData();
+        formData.append("audio", wavBlob, "recording.wav");
+
+        const response = await predictSnoreAsync(formData);
+        if (!response?.success) return;
+
+        const now = new Date();
+        const isSnore = response.data.predicted === "snore";
+        const confidence = response.data.snoreProb || 1.0;
+
+        if (isSnore) {
+          if (!currentStreakRef.current.startedAt) {
+            currentStreakRef.current = {
+              startedAt: now,
+              lastDetectedAt: now,
+              confidences: [confidence],
+            };
+          } else {
+            currentStreakRef.current.lastDetectedAt = now;
+            currentStreakRef.current.confidences.push(confidence);
+          }
+          setSnoreDetections((prev) => [
+            ...prev,
+            { startedAt: now, confidence },
+          ]);
+          snoreStreakRef.current += 1;
+        } else {
+          snoreStreakRef.current = 0;
+          if (currentStreakRef.current.startedAt) {
+            const gapSeconds =
+              (now.getTime() -
+                currentStreakRef.current.lastDetectedAt.getTime()) /
+              1000;
+            if (gapSeconds > SNORE_GAP_LIMIT_SECONDS) {
+              await saveSnoreStreak();
+            }
+          }
+        }
+      } catch (err) {
+        console.error("오디오 분석 중 오류 발생:", err);
+      }
+    },
+    [predictSnoreAsync, saveSnoreStreak],
+  );
+
+  /**
+   * 미디어 레코더 중지 및 스트림 릴리즈
+   */
+  const stopRecording = useCallback(() => {
+    if (recordingIntervalRef.current) {
+      clearInterval(recordingIntervalRef.current);
+      recordingIntervalRef.current = null;
+    }
+
+    const recorder = mediaRecorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      recorder.stop();
+      if (recorder.stream) {
+        recorder.stream.getTracks().forEach((track) => track.stop());
+      }
+    }
+  }, []);
+
+  /**
+   * 녹음 시작
+   */
+  const startRecording = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream, {
+        mimeType: "audio/webm;codecs=opus",
+      });
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = async (event) => {
+        if (event.data && event.data.size > 0) {
+          await sendAudio([event.data]);
+        }
+      };
+
+      recordingIntervalRef.current = setInterval(() => {
+        if (mediaRecorderRef.current?.state === "recording") {
+          mediaRecorderRef.current.stop();
+          mediaRecorderRef.current.start();
+        }
+      }, RECORDING_INTERVAL_MS);
+
+      recorder.start();
+    } catch (err) {
+      console.error("마이크 접근 오류:", err);
+    }
+  }, [sendAudio]);
+
+  /**
+   * 세션 컨트롤 로직
    */
   const startSession = async () => {
     const granted = await handleMicPermission();
-
     if (!granted) return;
 
     const data = await createSessionAsync({ startedAt: new Date() });
-    if (!data.success) return;
+    if (!data?.success) return;
 
     sessionIdRef.current = data.sessionId;
     setMonitoringStatus(MONITORING_STATUS.RUNNING);
@@ -118,29 +247,37 @@ export function useSnoreMonitoring() {
 
   /**
    * 모니터링 세션 종료
-   * 녹음을 중지하고 서버에 세션 종료 정보를 업데이트합니다.
    */
-
   const stopSession = async () => {
-    if (isPlayingAlarm) stopAlarm();
+    // 1. 상태를 먼저 '종료 중'으로 변경하여 알람 트리거 useEffect를 즉시 차단
     setMonitoringStatus(MONITORING_STATUS.FINISHING);
+
+    // 2. 알람 및 타이머 관련 상태 완전 초기화
+    stopAlarm();
     setIsCooldown(false);
+    if (cooldownTimerRef.current) {
+      clearTimeout(cooldownTimerRef.current);
+      cooldownTimerRef.current = null;
+    }
+
+    // 3. 녹음 중지 및 남은 데이터 저장
     stopRecording();
     await saveSnoreStreak();
 
-    const data = await updateSessionAsync(sessionIdRef.current, {
-      endedAt: new Date(),
-    });
-    if (!data.success) return;
+    // 4. 서버 세션 업데이트
+    if (sessionIdRef.current) {
+      const data = await updateSessionAsync(sessionIdRef.current, {
+        endedAt: new Date(),
+      });
+      if (data?.success) {
+        reportIdRef.current = data.reportId;
+      }
+    }
 
-    reportIdRef.current = data.reportId;
+    // 5. 최종 정지 상태로 변경
     setMonitoringStatus(MONITORING_STATUS.STOPPED);
   };
 
-  /**
-   * 모니터링 버튼 클릭 핸들러
-   * 현재 상태에 따라 시작 또는 종료 동작을 수행합니다.
-   */
   const handleToggleMonitoring = async () => {
     switch (monitoringStatus) {
       case MONITORING_STATUS.IDLE:
@@ -165,221 +302,72 @@ export function useSnoreMonitoring() {
     }
   };
 
-  /**
-   * 캐릭터 버튼 클릭 핸들러
-   * 쿨다운 상태를 켜거나 끄는 동작을 수행합니다.
-   */
   const handleToggleCooldown = () => {
     if (monitoringStatus !== MONITORING_STATUS.RUNNING) return;
 
-    if (isPlayingAlarm) {
+    if (isPlayingAlarm()) {
       stopAlarm();
       return;
-    } else {
-      if (isCooldown) {
-        initValidRefs();
+    }
+
+    setIsCooldown((prev) => {
+      const nextState = !prev;
+      if (cooldownTimerRef.current) {
         clearTimeout(cooldownTimerRef.current);
-      } else {
+        cooldownTimerRef.current = null;
+      }
+
+      if (nextState) {
+        // 쿨다운 켜기
         cooldownTimerRef.current = setTimeout(
           () => setIsCooldown(false),
-          COOLDOWN_MS,
+          ALARM_COOLDOWN_MS,
         );
-      }
-
-      setIsCooldown(!isCooldown);
-    }
-  };
-
-  /**
-   * 오디오 녹음 시작
-   * 브라우저 마이크 권한을 획득하고 3초 간격으로 오디오 데이터를 분할하여 분석에 전달합니다.
-   */
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorderRef.current = new MediaRecorder(stream, {
-        mimeType: "audio/webm;codecs=opus",
-      });
-      audioChunksRef.current = [];
-
-      // 데이터 가용 시 분석 함수 호출
-      mediaRecorderRef.current.ondataavailable = async (event) => {
-        if (event.data.size > 0) {
-          await sendAudio([event.data]);
-        }
-      };
-
-      // 3초마다 명시적으로 중지하고 다시 시작하여 독립적인 분석 단위(WAV) 생성
-      recordingIntervalRef.current = setInterval(() => {
-        if (mediaRecorderRef.current?.state === "recording") {
-          mediaRecorderRef.current.stop();
-          mediaRecorderRef.current.start();
-        }
-      }, 3000);
-
-      mediaRecorderRef.current.start();
-    } catch (err) {
-      console.error("마이크 접근 오류:", err);
-    }
-  };
-
-  /**
-   * 오디오 녹음 중지 및 리소스 해제
-   */
-  const stopRecording = () => {
-    if (recordingIntervalRef.current) {
-      clearInterval(recordingIntervalRef.current);
-      recordingIntervalRef.current = null;
-    }
-    if (
-      mediaRecorderRef.current &&
-      mediaRecorderRef.current.state !== "inactive"
-    ) {
-      mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream
-        .getTracks()
-        .forEach((track) => track.stop());
-    }
-  };
-
-  /**
-   * 녹음된 오디오 데이터를 AI 서버로 전송하여 코골이 여부 예측
-   * @param {Blob[]} chunks - 녹음된 오디오 데이터 조각들
-   */
-  const sendAudio = async (chunks) => {
-    if (!chunks || chunks.length === 0) return;
-    try {
-      // 1. WebM 데이터를 WAV 형식으로 변환 (서버 분석 요구사항)
-      const webmBlob = new Blob(chunks, { type: "audio/webm" });
-      const audioBuffer = await decodeAudio(webmBlob);
-      const wavBlob = audioBufferToWav(audioBuffer);
-
-      // 2. FormData에 오디오 파일 추가
-      const formData = new FormData();
-      formData.append("audio", wavBlob, "recording.wav");
-
-      // 3. 서버에 예측 요청
-      const data = await predictSnoreAsync(formData);
-      if (!data || !data.success) return;
-
-      // 이후 처리 로직에서 사용할 변수
-      const now = new Date();
-      const isSnore = data.data.predicted === "snore";
-      const confidence = data.data.snoreProb || 1.0;
-
-      // 코골이
-      if (isSnore) {
-        if (!currentStreakRef.current.startedAt) {
-          // [CASE A] 새로운 코골이 시작
-          currentStreakRef.current = {
-            startedAt: now,
-            lastDetectedAt: now,
-            confidences: [confidence],
-          };
-        } else {
-          // [CASE B] 기존 코골이 지속 중 (데이터 누적)
-          currentStreakRef.current.lastDetectedAt = now;
-          currentStreakRef.current.confidences.push(confidence);
-        }
-        setSnoreDetections((prev) => [...prev, { startedAt: now, confidence }]);
-        snoreStreakRef.current += 1;
       } else {
-        // 비코골이
-        snoreStreakRef.current = 0;
-        if (currentStreakRef.current.startedAt) {
-          // 중간에 비코골이가 섞였을 때, 마지막 감지 시점으로부터 30초가 지났는지 확인
-          const gapSeconds =
-            (now.getTime() -
-              currentStreakRef.current.lastDetectedAt.getTime()) /
-            1000;
-          // [CASE C] 30초 넘게 조용함 -> 이전 코골이가 완전히 끝났다고 판단하여 DB 저장
-          if (gapSeconds > 30) await saveSnoreStreak();
-        }
+        // 쿨다운 끄기
+        initValidRefs();
       }
-    } catch (err) {
-      console.error("오디오 분석 준비 중 오류:", err);
-    }
+      return nextState;
+    });
   };
 
-  /**
-   * 기준에 따라 지속되었다고 판단한 코골이 세션을
-   * 서버에 코골이 데이터 저장을 요청
-   */
-  const saveSnoreStreak = async () => {
-    const { startedAt, lastDetectedAt, confidences } = currentStreakRef.current;
-    if (!startedAt) return;
+  // --- 알람 발생 유틸 함수 ---
+  const triggerAlarmWithCooldown = useCallback(async () => {
+    const now = Date.now();
+    if (isCooldown && now - lastAlarmTimeRef.current < ALARM_COOLDOWN_MS)
+      return;
 
-    const durationSeconds =
-      (lastDetectedAt.getTime() - startedAt.getTime()) / 1000;
+    lastAlarmTimeRef.current = now;
+    setIsCooldown(true);
+    playAlarm();
 
-    // 최소 10초 이상 지속된 경우만 유효한 코골이로 인정하여 DB 저장
-    if (durationSeconds >= 10) {
-      const avgConfidence =
-        confidences.reduce((a, b) => a + b, 0) / confidences.length;
+    cooldownTimerRef.current = setTimeout(
+      () => setIsCooldown(false),
+      ALARM_COOLDOWN_MS,
+    );
 
-      // 코골이 저장 API 호출
-      const data = await createSnoreEventAsync(sessionIdRef.current, {
-        startedAt,
-        endedAt: lastDetectedAt,
-        avgConfidence: Number(avgConfidence.toFixed(2)),
-      });
-      if (!data.success) return;
-    }
-
-    // 저장 후 다음 묶음을 위해 초기화
-    currentStreakRef.current = {
-      startedAt: null,
-      lastDetectedAt: null,
-      confidences: [],
-    };
-  };
-
-  /**
-   * 알람 트리거 효과
-   * 코골이 감지 목록이나 사용자 설정이 변경될 때마다 알람 조건을 검사합니다.
-   */
-  useEffect(() => {
-    if (!alarmActiveRef.current) return;
-
-    /**
-     * 쿨다운을 고려한 알람 실행
-     * 알람이 한 번 울리면 30분 동안 다시 울리지 않도록 설정합니다.
-     */
-    const triggerAlarmWithCooldown = async () => {
-      const now = Date.now();
-      const COOLDOWN_MS = 30 * 60 * 1000;
-
-      if (isCooldown && now - lastAlarmTimeRef.current < COOLDOWN_MS) return;
-
-      lastAlarmTimeRef.current = now;
-      setIsCooldown(true);
-      playAlarm();
-
-      // 30분 뒤 쿨다운 해제
-      cooldownTimerRef.current = setTimeout(
-        () => setIsCooldown(false),
-        COOLDOWN_MS,
-      );
+    if (sessionIdRef.current) {
       await createAlarmLogAsync(sessionIdRef.current, {
         triggeredAt: new Date(),
       });
-    };
+    }
+  }, [isCooldown, playAlarm, createAlarmLogAsync]);
 
-    /**
-     * 지속 시간 기반 알람 (조건 1)
-     * 코골이가 약 10초 이상(연속 4회 이상 감지) 지속될 경우 알람 발생
-     */
-    const durationBasedAlarm = () => {
-      if (snoreStreakRef.current > 3) triggerAlarmWithCooldown();
-    };
+  // --- 알람 조건 감시 및 트리거 효과 ---
+  useEffect(() => {
+    if (monitoringStatus !== MONITORING_STATUS.RUNNING) return;
+    if (!alarmActiveRef.current) return;
 
-    /**
-     * 빈도 패턴 기반 알람 (조건 2)
-     * 1분 내에 코골이가 5회 이상 감지될 경우 알람 발생
-     */
-    const patternBasedAlarm = () => {
-      if (snoreDetections.length < 5) return;
+    const condition = String(user?.alarmCondition);
 
+    // 1. 지속 시간 기반 알람 (연속 4회 감지 = 약 12초)
+    if (condition === "1" && snoreStreakRef.current > 3) {
+      triggerAlarmWithCooldown();
+      return;
+    }
+
+    // 2. 빈도 패턴 기반 알람 (1분 내 5회 이상)
+    if (condition === "2" && snoreDetections.length >= 5) {
       const lastSnoreTime = new Date(
         snoreDetections.at(-1)?.startedAt,
       ).getTime();
@@ -387,43 +375,43 @@ export function useSnoreMonitoring() {
         snoreDetections.at(-5)?.startedAt,
       ).getTime();
 
-      if (fifthLastSnoreTime < patternValidSince.current) return;
-
-      if (lastSnoreTime - fifthLastSnoreTime < 60 * 1000)
+      if (
+        fifthLastSnoreTime >= patternValidSince.current.getTime() &&
+        lastSnoreTime - fifthLastSnoreTime < 60 * 1000
+      ) {
         triggerAlarmWithCooldown();
+      }
+    }
+  }, [
+    snoreDetections,
+    user?.alarmCondition,
+    monitoringStatus,
+    triggerAlarmWithCooldown,
+  ]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (monitoringStatus === MONITORING_STATUS.RUNNING) {
+        e.preventDefault();
+        // 현대 브라우저에서는 기본 경고창이 출력되며, 아래 문자열은 무시되지만 하위 호환성을 위해 작성합니다.
+        e.returnValue = "";
+      }
     };
 
-    // 사용자 설정에 따른 알람 로직 실행
-    switch (user?.alarmCondition) {
-      case 1:
-      case "1":
-        durationBasedAlarm();
-        break;
-      case 2:
-      case "2":
-        patternBasedAlarm();
-        break;
-      default:
-        break;
-    }
-  }, [snoreDetections, user?.alarmCondition, playAlarm, createAlarmLogAsync]);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [monitoringStatus]);
 
-  // 언마운트 클린업 이펙트
+  // --- 언마운트 클린업 ---
   useEffect(() => {
     return () => {
-      if (recordingIntervalRef.current)
-        clearInterval(recordingIntervalRef.current);
-      if (mediaRecorderRef.current) {
-        if (mediaRecorderRef.current.state !== "inactive")
-          mediaRecorderRef.current.stop();
-        mediaRecorderRef.current.stream
-          ?.getTracks()
-          .forEach((track) => track.stop());
-      }
+      stopRecording();
       if (cooldownTimerRef.current) clearTimeout(cooldownTimerRef.current);
       stopAlarm();
     };
-  }, [stopAlarm]);
+  }, [stopRecording, stopAlarm]);
 
   return {
     monitoringStatus,
