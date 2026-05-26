@@ -8,7 +8,8 @@ const userService = require("../services/user_service");
  */
 exports.getUser = async (req, res) => {
   try {
-    const userId = req.params.id || req.headers["x-user-id"];
+    //기존 req.headers['x-user-id'] 대신 미들웨어 통해 온 req.userId 사용
+    const userId = req.params.id || req.userId;
 
     if (!userId) {
       return res.status(400).json({
@@ -40,7 +41,7 @@ exports.getUser = async (req, res) => {
  */
 exports.updateUser = async (req, res) => {
   try {
-    const userId = req.headers["x-user-id"];
+    const userId = req.userId; // 미들웨어 통해 온 검증된 req.userId 사용
 
     if (!userId) {
       return res.status(401).json({
