@@ -62,17 +62,18 @@
   align-items: center;
   gap: 12px;
   width: fit-content;
-  padding: 13px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.13);
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.049);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.065);
-  font-weight: 800;
+  background: rgba(255, 255, 255, 0.052);
+  font-weight: 500;
+  font-size: 10px;
   color: white;
 }
 
 .pill i {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #4be28d;
 }
@@ -126,7 +127,8 @@
   transform: translateX(-50%);
   object-fit: contain;
   z-index: 1;
-}
+  clip-path: circle(48% at 50% 35%);
+ }
 
 .pandaStart {
   bottom: 24px;
@@ -141,7 +143,7 @@
       transparent 100%
     ),
     radial-gradient(ellipse at 50% 58%, #000 0 52%, transparent 76%);
-  -webkit-mask-composite: source-in;
+  -webkit-mask-composite: source-in; 
   mask-image:
     linear-gradient(
       180deg,
@@ -159,14 +161,14 @@
   left: 50%;
   bottom: 0px;
   display: grid;
-  min-width: 165px;
+  min-width: 150px;
   padding: 10px 20px;
   transform: translateX(-50%);
-  border: 0.05px solid rgba(77, 43, 145, 0.168);
+  border: 0.5px solid rgba(170, 171, 202, 0.185);
   border-radius: 50px;
   background: linear-gradient(180deg, #2d1b52d5, #171028);
   color: #bda6d9;
-  box-shadow: 0 0 22px rgba(143, 68, 255, 0.34);
+  /* box-shadow: 0 0 22px rgba(143, 68, 255, 0.34); */
   z-index: 2;
 }
 
@@ -187,8 +189,8 @@
   border: 1px solid rgba(211, 195, 255, 0.14);
   background: linear-gradient(
     135deg,
-    rgba(28, 24, 62, 0.92),
-    rgba(9, 9, 38, 0.94)
+    rgba(28, 24, 62, 0.43),
+    rgba(9, 9, 38, 0.275)
   );
   box-shadow: inset 0 1px rgba(255, 255, 255, 0.04);
 }
@@ -249,7 +251,7 @@
 .statsBar {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  margin-top: 38px;
+  margin-top: 5px;
   border-radius: 22px;
   overflow: hidden;
 }
@@ -259,7 +261,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  padding: 18px 14px;
+  padding: 10px 14px;
   color: #d9d3e7;
   align-items: center;
   justify-content: center;
@@ -268,7 +270,7 @@
 }
 
 .statsBar div + div {
-  border-left: 1px solid rgba(255, 255, 255, 0.11);
+  border-left: 1px solid rgba(255, 255, 255, 0.055);
 }
 
 .statsBar svg {
@@ -278,7 +280,7 @@
 .statsBar strong {
   width: 100%;
   color: #fff;
-  font-size: 25px;
+  font-size: 20px;
 }
 
 .statsBar small {
