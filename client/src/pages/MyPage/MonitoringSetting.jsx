@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import styles from "./MonitoringSetting.module.css";
-import { Mic, Waves, RefreshCcw, Bell, Check } from "lucide-react";
+import { Mic, RefreshCcw, Check } from "lucide-react";
 import alarmSettingIcon from "@/assets/images/alarmSettingIcon.png";
 import {
   checkMicPermission,
@@ -179,7 +179,8 @@ function Option({ active = false, icon, title, text, onClick }) {
         <small>{text}</small>
       </span>
 
-      <i>{active && <Check />}</i>
+      {/* <i>{active && <Check />}</i> */}
+      <i>{active}</i>
     </button>
   );
 }

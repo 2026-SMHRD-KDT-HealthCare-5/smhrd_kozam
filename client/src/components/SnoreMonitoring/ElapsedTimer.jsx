@@ -16,7 +16,7 @@ const ElapsedTimer = ({ isRunning }) => {
 
   return (
     <div className={styles.elapsed}>
-      <Waves />
+      {/* <Waves /> */}
       경과 시간
       <strong>{formatTime(seconds)}</strong>
     </div>
