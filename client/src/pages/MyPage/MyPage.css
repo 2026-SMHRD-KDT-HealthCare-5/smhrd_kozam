@@ -8,22 +8,10 @@
   overflow: visible;
   background:
     linear-gradient(rgba(3, 4, 23, 0.75), rgba(3, 4, 23, 0.95)),
-    url("../../assets/images/monitoring_back.png");
+    url("@/assets/images/monitoringBack.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  /* background:
-    radial-gradient(
-      circle at 22% 24%,
-      rgba(97, 55, 207, 0.2),
-      transparent 11rem
-    ),
-    radial-gradient(
-      circle at 78% 42%,
-      rgba(156, 78, 255, 0.16),
-      transparent 10rem
-    ),
-    #030417; */
 }
 
 .content-stack {
@@ -51,8 +39,7 @@
   font-weight: 400;
 }
 
-.tabs .active,
-.footer-actions button:last-child {
+.tabs .active {
   background: linear-gradient(135deg, #751ee0, #ba46ee);
   color: white;
   box-shadow:
@@ -248,6 +235,7 @@
 }
 
 .posture-row button {
+  color: rgba(255, 255, 255, 0.4);
   min-height: 50px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 12px;
@@ -255,34 +243,66 @@
 }
 
 .posture-row .active {
+  color: white;
   background: linear-gradient(135deg, #9b36ea, #6222c0);
   font-size: 14px;
   font-weight: 300;
 }
 
-.footer-actions button {
-  min-height: 50px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.07);
-}
-
+/* --- 하단 액션 패널 영역 --- */
 .footer-actions {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 16px;
   margin-top: 20px;
+  width: 100%;
 }
 
-.footer-actions button {
+/* 1. 저장하기 등 일반 액션 버튼 */
+.footer-actions button.submit-button {
+  width: 100%;
   min-height: 58px;
   font-size: 18px;
-}
-
-.footer-actions button:last-child {
   font-weight: 400;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  color: white !important; /* 전역 button 규칙 방어 */
+  background: linear-gradient(135deg, #751ee0, #ba46ee);
+  box-shadow:
+    inset 0 0 18px rgba(255, 255, 255, 0.1),
+    0 0 20px rgba(154, 69, 255, 0.32);
+  cursor: pointer;
 }
 
-button {
-  color: white;
+/* 2. 로그아웃 버튼 전용 (우선순위를 높여 전역 button 설정을 완전히 무력화) */
+.footer-actions button.logout-button {
+  width: auto !important;
+  min-height: auto !important;
+  background: none !important;
+  border: none !important;
+  color: rgba(
+    255,
+    255,
+    255,
+    0.4
+  ) !important; /* 👈 이제 정상적으로 흐려집니다 */
+  font-size: 14px;
+  font-weight: 400;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transition: color 0.2s ease;
+  padding: 8px 16px;
+  box-shadow: none !important;
+}
+
+/* 💡 마우스 올렸을 때 선명해지는 호버 효과 */
+.footer-actions button.logoutButton:hover {
+  color: rgba(
+    255,
+    255,
+    255,
+    0.85
+  ) !important; /* 👈 마우스 올리면 확실하게 밝아짐 */
 }
