@@ -13,9 +13,64 @@ import {
 
 import styles from "./SleepingHistory.module.css";
 import sleepingPanda from "@/assets/images/sleepingPanda.png";
+import { useEffect, useState } from "react";
+import { getReport, getReportList } from "@/api/history";
+import { useRef } from "react";
+import { useAsync } from "@/hooks/useAsync";
 
 const SleepingHistory = () => {
   const { reportId: initialReportId } = useParams();
+  const { execute: getReportAsync } = useAsync(getReport);
+  const { execute: getReportListAsync } = useAsync(getReportList);
+
+  const [reportData, setReportData] = useState({
+    reportId: null,
+    startDate: "2026-05-26 FAKE",
+    sleepDuration: 0,
+    startTime: "",
+    endTime: "",
+    snoreCount: 13,
+    alarmsCount: 3,
+    alarmCondition: "2",
+    alarmStamps: [],
+    feedback: {
+      title: "",
+      content: "",
+      detail: "",
+    },
+    height: null,
+    weight: null,
+    sleepingPosture: "",
+  });
+
+  const currentReportId = useRef(initialReportId);
+  const reportListRef = useRef([]);
+
+  // 사용자의 Report 전체 목록 조회 (날짜 선택 모달용)
+  const onGetReportList = () => {
+    const response = getReportListAsync();
+    
+    if (!response.success) return;
+
+    // TODO: 여기부터 하기
+    reportListRef.current = response.data.reports;
+    reportListRef.current = response.data.reports;
+  };
+
+  const onGetReport = () => {
+    // const reportId = currentReportId.current || ;
+
+    const response = getReportAsync();
+    if (response.success) setReportData(response.data);
+  };
+
+  useEffect(() => {});
+
+  //
+  useEffect(() => {
+    onGetReportList();
+    onGetReport();
+  }, []);
 
   return (
     <main className={styles.screen}>
@@ -23,7 +78,7 @@ const SleepingHistory = () => {
         {/* <button className={styles.dateCard} onClick={onOpenModal}> */}
         <button className={styles.dateCard} onClick={() => {}}>
           <span>날짜</span>
-          <strong>selectedDate.label</strong>
+          <strong>{reportData?.startDate}</strong>
           <ChevronDown />
           <em>
             <CalendarDays />
