@@ -52,6 +52,8 @@ GET /history/reports/:reportId
     "sleepDuration": 28800000,
     "startTime": "2026-05-26T22:00:00Z",
     "endTime": "2026-05-27T07:00:00Z",
+    "snoreCount": 13,
+    "alarmsCount": 3,
     "alarmCondition": "2",
     "alarmStamps": ["2026-05-26T23:30:00Z", "2026-05-27T04:25:00Z"],
     "feedback": {
