@@ -7,14 +7,14 @@
   transform: translateX(-60%);
   max-width: 520px;
   margin: 0 auto;
-  border-radius: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  /* border-radius: 32px; */
+  /* border: 1px solid rgba(255, 255, 255, 0.05); */
   background: #0b071e; /* Kozam의 메인 다크 컬러 */
 
   /* 깊이감을 주는 고급스러운 다크모드 전용 그림자 */
   box-shadow:
-    -10px 0px 30px rgba(0, 0, 0, 0.6),
-    0px 20px 50px rgba(0, 0, 0, 0.8);
+    -10px 0px 30px rgba(0, 0, 0, 0.651),
+    0px 20px 50px rgba(0, 0, 0, 0.392);
 
   /* 오른쪽이나 아래쪽에 여백을 살짝 주면 떠 있는 느낌이 극대화됩니다 */
   margin-right: 16px;

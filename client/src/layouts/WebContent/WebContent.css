@@ -21,7 +21,7 @@
   gap: 8px;
   width: fit-content;
   margin-bottom: 10px;
-  padding: 5px 10px;
+  padding: 10px 15px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 999px;
   background: rgba(5, 3, 24, 0.36);
@@ -31,11 +31,11 @@
 }
 
 .web-content-badge span {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: #34e37b;
-  box-shadow: 0 0 10px rgba(52, 227, 123, 0.6);
+  background: #4be28d;
+  box-shadow: 0 0 10px rgba(215, 227, 52, 0.6);
 }
 
 .web-content-copy {
@@ -81,11 +81,17 @@
   place-items: center;
   width: 42px;
   height: 42px;
-  border: 1px solid rgba(165, 101, 255, 0.45);
+  /* border: 1px solid rgba(165, 101, 255, 0.45);
   border-radius: 50%;
   background: rgba(132, 48, 214, 0.28);
   color: #b66cff;
-  font-size: 20px;
+  font-size: 20px; */
+}
+
+.feature-icon img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
 }
 
 .web-content-feature strong {
@@ -107,7 +113,7 @@
   max-width: 640px;
   height: 360px;
   position: absolute;
-  bottom: 25px;
+  bottom: 0px;
   left: 50%;
   transform: translateX(-50%);
   background-image: url(@/assets/images/webPanda.png);
