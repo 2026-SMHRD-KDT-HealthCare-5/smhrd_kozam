@@ -237,10 +237,10 @@ export function useSnoreMonitoring() {
     const granted = await handleMicPermission();
     if (!granted) return;
 
-    const data = await createSessionAsync({ startedAt: new Date() });
-    if (!data?.success) return;
+    const response = await createSessionAsync({ startedAt: new Date() });
+    if (!response?.success) return;
 
-    sessionIdRef.current = data.sessionId;
+    sessionIdRef.current = response.data.sessionId;
     setMonitoringStatus(MONITORING_STATUS.RUNNING);
     await startRecording();
   };
@@ -266,16 +266,17 @@ export function useSnoreMonitoring() {
 
     // 4. 서버 세션 업데이트
     if (sessionIdRef.current) {
-      const data = await updateSessionAsync(sessionIdRef.current, {
+      const response = await updateSessionAsync(sessionIdRef.current, {
         endedAt: new Date(),
       });
-      if (data?.success) {
-        reportIdRef.current = data.reportId;
-      }
-    }
 
-    // 5. 최종 정지 상태로 변경
-    setMonitoringStatus(MONITORING_STATUS.STOPPED);
+      if (!response.success) return;
+
+      reportIdRef.current = response.data.reportId;
+
+      // 5. 최종 정지 상태로 변경
+      setMonitoringStatus(MONITORING_STATUS.STOPPED);
+    }
   };
 
   const handleToggleMonitoring = async () => {
