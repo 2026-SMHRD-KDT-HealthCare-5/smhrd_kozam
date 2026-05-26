@@ -29,11 +29,11 @@ class SnoreModel:
                 self.model = joblib.load(self.model_path)
                 with open(self.label_map_path, "r", encoding="utf-8") as f:
                     self.label_map = {int(k): v for k, v in json.load(f).items()}
-                print(f"✅ Model loaded successfully from {self.model_path}")
+                print(f"[SUCCESS] Model loaded successfully from {self.model_path}")
             else:
-                print(f"⚠️ Model files not found. Expected at:\n  - {self.model_path}\n  - {self.label_map_path}")
+                print(f"[WARN] Model files not found. Expected at:\n  - {self.model_path}\n  - {self.label_map_path}")
         except Exception as e:
-            print(f"❌ Error loading model: {e}")
+            print(f"[ERROR] Error loading model: {e}")
 
     def pad_or_trim(self, audio: np.ndarray, target_length: int = EXPECTED_SAMPLES) -> np.ndarray:
         # 녹음 파일이 2초보다 짧으면 뒤를 0으로 채우고, 길면 2초로 자릅니다.
@@ -107,7 +107,7 @@ class SnoreModel:
             snore_prob = float(probs[snore_idx]) if snore_idx is not None else 0.0
             rms = float(np.sqrt(np.mean(audio_data ** 2)))
             
-            # 🎯 [수정 포인트] 기본값을 0이 아니라 문자열 등 원하는 형태로 안전하게 먼저 선언합니다.
+            # 기본 강도 및 라벨 설정
             intensity = "normal" 
             
             # 코골이 판단 시 강도 스코어 계산 

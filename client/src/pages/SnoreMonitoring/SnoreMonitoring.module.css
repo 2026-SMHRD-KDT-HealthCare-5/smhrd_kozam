@@ -1,21 +1,17 @@
 .screen {
   position: relative;
-  width: min(100%, 520px);
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
   min-height: 100vh;
   margin: 0 auto;
-  overflow: hidden;
+  overflow: visible;
   background:
-    radial-gradient(
-      circle at 22% 24%,
-      rgba(97, 55, 207, 0.2),
-      transparent 11rem
-    ),
-    radial-gradient(
-      circle at 78% 42%,
-      rgba(156, 78, 255, 0.16),
-      transparent 10rem
-    ),
-    #030417;
+    linear-gradient(rgba(3, 4, 23, 0.75), rgba(3, 4, 23, 0.95)),
+    url("@/assets/images/monitoringBack.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .screen::before {
@@ -95,6 +91,7 @@
   background-image: url("@/assets/images/orbImage.png");
   background-size: cover;
   background-position: center;
+  cursor: pointer;
 }
 
 .orb p {
@@ -242,10 +239,64 @@
 
 .startAction {
   background: linear-gradient(135deg, #b14fff, #6126c7);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.1s ease;
+}
+
+.startAction:hover {
+  background-color: #6d4ce0;
+
+  box-shadow: 0 8px 24px rgba(92, 59, 194, 0.4);
+}
+
+.startAction:active {
+  transform: scale(0.98);
 }
 
 .stopAction {
   background: rgba(255, 255, 255, 0.055);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.1s ease;
+}
+
+.stopAction:hover {
+  background-color: #2e264a;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.stopAction:active {
+  transform: scale(0.98);
+}
+
+.stopAction svg {
+  stroke: #ff4d4d;
+}
+
+.stopAction:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: none;
+  transform: none;
+}
+
+.stopAction:disabled svg {
+  animation: spin 1s linear infinite;
+  stroke: #aaa;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .statsBar {
@@ -261,7 +312,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  padding: 10px 14px;
+  padding: 8px 14px;
   color: #d9d3e7;
   align-items: center;
   justify-content: center;
@@ -292,4 +343,29 @@
 .statsBar em {
   color: #5ce99b;
   font-style: normal;
+}
+
+.cooldownWrapper {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 12px;
+  margin-bottom: 4px;
+}
+
+.cooldownBanner {
+  background-color: #1e1b4b;
+  color: #a5b4fc;
+  border: 1px solid #312e81;
+
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+
+  width: 100%;
+  box-sizing: border-box;
 }

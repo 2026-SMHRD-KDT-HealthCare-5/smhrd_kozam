@@ -1,69 +1,111 @@
-import startPanda from "@/assets/images/startPanda.png";
-import idlePanda from "@/assets/images/idlePanda.png";
 import styles from "./SnoreMonitoring.module.css";
-import { Waves, Moon, Square, ShieldCheck, Mic } from "lucide-react";
-import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
+// Components
+import LoadingSpinner from "@/components/common/LoadingSpinner";
+import StatusPill from "@/components/SnoreMonitoring/StatusPill";
+import ElapsedTimer from "@/components/SnoreMonitoring/ElapsedTimer";
+import StatsBar from "@/components/SnoreMonitoring/StatsBar";
+import ActionButtonContent from "@/components/SnoreMonitoring/ActionButtonContent";
+
+import { useSnoreMonitoring } from "@/hooks/SnoreMonitoring/useSnoreMonitoring";
+import { MONITORING_STATUS, STATUS_CONFIG } from "@/constants/monitoring.js";
+
+/**
+ * 코골이 모니터링 페이지 컴포넌트
+ * 마이크를 통해 실시간으로 오디오를 녹음하고 AI 모델을 통해 코골이를 감지합니다.
+ * 감지된 결과에 따라 사용자 설정에 맞는 알람을 발생시킵니다.
+ */
 const SnoreMonitoring = () => {
-  const [isRunning, setIsRunning] = useState(false);
+  const {
+    monitoringStatus,
+    snoreDetections,
+    isCooldown,
+    isLoading,
+    user,
+    handleToggleMonitoring,
+    handleToggleCooldown,
+  } = useSnoreMonitoring();
+
+  const currentStatus = STATUS_CONFIG[monitoringStatus];
+  const isRunning = monitoringStatus === MONITORING_STATUS.RUNNING;
+  const isFinishing = monitoringStatus === MONITORING_STATUS.FINISHING;
+  const shouldShowTimer =
+    monitoringStatus !== MONITORING_STATUS.FINISHING &&
+    monitoringStatus !== MONITORING_STATUS.STOPPED;
+  const actionButtonClassName =
+    isRunning || isFinishing ? styles.stopAction : styles.startAction;
 
   return (
     <main className={styles.screen}>
       <section className={styles.monitorShell}>
-        <div className={styles.statusRow}>
-          <span className={`${styles.pill} ${isRunning && styles.active}`}>
-            <i />
-            {isRunning ? "모니터링중" : "모니터링 준비 완료"}
-          </span>
+        <StatusPill text={currentStatus.text} active={isRunning} />
+
+        <div className={styles.cooldownWrapper}>
+          <AnimatePresence>
+            {isCooldown && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className={styles.cooldownBanner}
+              >
+                ⏳ 알람 쿨다운 작동 중 (30분간 방해금지)
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-        <div className={styles.orb}>
-          <img
-            className={`${styles.panda} ${styles.pandaStart}`}
-            src={isRunning ? startPanda : idlePanda}
-            alt="잠자는 판다"
-          />
-          <div className={styles.elapsed}>
-            <Waves />
-            경과 시간
-            <strong>02:13:47</strong>
-          </div>
+
+        <div className={styles.orb} onClick={handleToggleCooldown}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={monitoringStatus}
+              className={`${styles.panda} ${styles.pandaStart}`}
+              style={{ x: "-50%" }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              whileHover={{
+                scale: 1.03,
+                y: -8,
+                cursor: "pointer",
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 20,
+                opacity: { duration: 0.2 },
+              }}
+            >
+              <img
+                src={currentStatus.image}
+                alt={`${monitoringStatus} panda`}
+                style={{ width: "100%", height: "100%", objectFit: "contain" }}
+              />
+            </motion.div>
+          </AnimatePresence>
+
+          {shouldShowTimer && <ElapsedTimer isRunning={isRunning} />}
         </div>
-        <StatsBar />
+
+        <StatsBar
+          snoreCount={snoreDetections.length}
+          alarmCondition={user?.alarmCondition}
+        />
+
         <div className={styles.controlPanel}>
           <button
-            className={isRunning ? styles.stopAction : styles.startAction}
-            onClick={(e) => {
-              e.preventDefault();
-              setIsRunning(!isRunning);
-            }}
+            className={actionButtonClassName}
+            onClick={handleToggleMonitoring}
+            disabled={isFinishing || isLoading}
           >
-            {isRunning ? <Square /> : <Moon />}
-            모니터링 {isRunning ? "종료" : "시작"}
-            <small>
-              {isRunning ? "측정을 중지해요" : "수면 분석을 시작해요"}
-            </small>
+            <ActionButtonContent config={currentStatus.button} />
           </button>
         </div>
       </section>
-    </main>
-  );
-};
 
-const StatsBar = () => {
-  return (
-    <div className={styles.statsBar}>
-      <div>
-        <Mic />
-        코골이 감지
-        <strong>
-          12<small>회</small>
-        </strong>
-      </div>
-      <div>
-        <ShieldCheck />
-        알람 상태<strong>꺼짐</strong>
-      </div>
-    </div>
+      {isLoading && <LoadingSpinner />}
+    </main>
   );
 };
 

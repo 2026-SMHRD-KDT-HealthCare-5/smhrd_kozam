@@ -1,9 +1,10 @@
 .settingCard {
-  border: 1px solid rgba(211, 195, 255, 0.055);
+
+  border: 1px solid rgba(210, 106, 255, 0.116);
   background: linear-gradient(
     135deg,
-    rgba(28, 24, 62, 0.5),
-    rgba(9, 9, 38, 0.17)
+    rgba(46, 24, 62, 0.167),
+    rgba(9, 9, 38, 0.533)
   );
   box-shadow: inset 0 1px rgba(255, 255, 255, 0.04);
 }
@@ -50,6 +51,10 @@
   border-radius: 14px;
   color: #aaa2b7;
   line-height: 1.45;
+}
+
+.option {
+  color: white;
 }
 
 .option > svg {
@@ -328,4 +333,21 @@
 .toggleInput:disabled + .toggleSlider::before {
   background-color: #f3f4f6; /* gray-100 */
   box-shadow: none;
+}
+
+.micCard .errorMessage {
+  color: #ff4d4f;
+  font-size: 10px;
+  font-weight: 300;
+
+  opacity: 0;
+  transform: translateY(-4px); /* 살짝 위에서 내려오는 효과용 */
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.micCard .errorMessage.active {
+  opacity: 1;
+  transform: translateY(0);
 }

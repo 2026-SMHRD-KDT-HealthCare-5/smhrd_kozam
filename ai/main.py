@@ -1,6 +1,12 @@
+import sys
+import io
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import predict
+
+if sys.platform == "win32":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
 
 app = FastAPI(title="kozam AI Server")
 

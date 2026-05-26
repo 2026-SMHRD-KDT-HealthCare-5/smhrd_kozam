@@ -9,9 +9,10 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "start": "concurrently \"npm run start:client\" \"npm run start:server\"",
+    "start": "concurrently \"npm run start:client\" \"npm run start:server\" \"npm run start:ai\"",
     "start:client": "npm -w client start",
-    "start:server": "npm -w server start"
+    "start:server": "npm -w server start",
+    "start:ai": "cd ai && .\\.venv\\Scripts\\activate && uvicorn main:app --host 127.0.0.1 --port 8000 --reload"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
@@ -22,7 +23,8 @@
     "globals": "^15.12.0"
   },
   "dependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "jsonwebtoken": "^9.0.3"
   },
   "version": "1.0.0",
   "description": "Kozam은 사용자의 수면 질 개선을 돕기 위해 코골이 패턴을 모니터링, 기록 및 분석하도록 설계된 종합 솔루션입니다. 이 시스템은 웹 기반 기록조회, 데이터 관리를 위한 백엔드 서버, 그리고 코골이 감지 및 분석을 위한 AI 서비스로 구성됩니다.",
