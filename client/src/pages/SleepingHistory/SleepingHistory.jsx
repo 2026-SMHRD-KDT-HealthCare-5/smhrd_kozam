@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   ChevronDown,
@@ -13,17 +14,65 @@ import {
 
 import styles from "./SleepingHistory.module.css";
 import sleepingPanda from "@/assets/images/sleepingPanda.png";
+import DateSelectModal from "@/components/common/DateSelectModal";
+
+const savedDates = [
+  {
+    id: "2026-05-26",
+    label: "2026년 5월 26일",
+    summary: "수면 6시간 12분 · 코골이 12회",
+  },
+  {
+    id: "2026-05-25",
+    label: "2026년 5월 25일",
+    summary: "수면 7시간 04분 · 코골이 8회",
+  },
+  {
+    id: "2026-05-24",
+    label: "2026년 5월 24일",
+    summary: "수면 5시간 48분 · 코골이 15회",
+  },
+  {
+    id: "2026-05-23",
+    label: "2026년 5월 23일",
+    summary: "수면 6시간 31분 · 코골이 10회",
+  },
+];
+
+const monitoringRange = {
+  start: "23:58",
+  end: "06:25",
+};
+
+const timelineBars = Array.from({ length: 56 }, (_, index) => ({
+  id: index,
+  alarmTriggered: index === 13 || index === 26 || index === 37,
+  snoreDetected:
+    (index >= 8 && index <= 12) ||
+    (index >= 21 && index <= 25) ||
+    (index >= 33 && index <= 36) ||
+    (index >= 45 && index <= 50),
+}));
 
 const SleepingHistory = () => {
   const { reportId: initialReportId } = useParams();
+  const [selectedDate, setSelectedDate] = useState(savedDates[0]);
+  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+
+  const handleSelectDate = (date) => {
+    setSelectedDate(date);
+    setIsDateModalOpen(false);
+  };
 
   return (
     <main className={styles.screen}>
       <section className={styles.contentStack}>
-        {/* <button className={styles.dateCard} onClick={onOpenModal}> */}
-        <button className={styles.dateCard} onClick={() => {}}>
+        <button
+          className={styles.dateCard}
+          onClick={() => setIsDateModalOpen(true)}
+        >
           <span>날짜</span>
-          <strong>selectedDate.label</strong>
+          <strong>{selectedDate.label}</strong>
           <ChevronDown />
           <em>
             <CalendarDays />
@@ -35,6 +84,14 @@ const SleepingHistory = () => {
         <Feedback />
         <HistoryRows />
       </section>
+
+      <DateSelectModal
+        open={isDateModalOpen}
+        dates={savedDates}
+        selectedDateId={selectedDate.id}
+        onSelect={handleSelectDate}
+        onClose={() => setIsDateModalOpen(false)}
+      />
     </main>
   );
 };
@@ -60,22 +117,31 @@ const Timeline = () => {
           코골이 감지
         </span>
         <span>
-          <i />
+          <i className={styles.alarm} />
           알람 발생
         </span>
       </div>
       <div className={styles.timelineBars}>
-        {Array.from({ length: 47 }).map((_, index) => (
-          <span
-            key={index}
-            className={index % 9 < 4 ? styles.purple : styles.yellow}
-          />
-        ))}
+        {timelineBars.map((bar) => {
+          const barClassName = bar.alarmTriggered
+            ? styles.alarm
+            : bar.snoreDetected
+              ? styles.yellow
+              : styles.purple;
+          const label = bar.alarmTriggered
+            ? "알람 발생"
+            : bar.snoreDetected
+              ? "코골이 감지"
+              : "감지 없음";
+
+          return <span key={bar.id} className={barClassName} title={label} />;
+        })}
       </div>
-      <br />
       <div className={styles.sleepRange}>
-        <Moon /> <div />
-        <span>06:25</span>
+        <span>{monitoringRange.start}</span>
+        
+        <div />
+        <span>{monitoringRange.end}</span>
       </div>
     </Card>
   );

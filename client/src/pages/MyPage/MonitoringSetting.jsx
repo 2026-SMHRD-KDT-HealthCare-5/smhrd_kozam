@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import styles from "./MonitoringSetting.module.css";
-import { Mic, RefreshCcw, Check } from "lucide-react";
+import { Mic, RefreshCcw } from "lucide-react";
 import alarmSettingIcon from "@/assets/images/alarmSettingIcon.png";
+import nonactivePanda from "@/assets/images/nonactivePanda.png";
+import activePanda from "@/assets/images/activePanda.png";
 import {
   checkMicPermission,
   requestMicPermission,
@@ -179,8 +181,9 @@ function Option({ active = false, icon, title, text, onClick }) {
         <small>{text}</small>
       </span>
 
-      {/* <i>{active && <Check />}</i> */}
-      <i>{active}</i>
+      <i>
+        {active && <img src={activePanda} alt="" aria-hidden="true" />}
+      </i>
     </button>
   );
 }
