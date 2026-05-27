@@ -245,7 +245,6 @@ const Summary = ({ summaryData }) => {
         <div className={styles.scoreRing}>
           <strong>{score}</strong>
           <span>점</span>
-          <small>수면 점수</small>
         </div>
 
         {/* 2. 오른쪽 4개 정보 그리드 (div로 한 번 감싸줍니다) */}
