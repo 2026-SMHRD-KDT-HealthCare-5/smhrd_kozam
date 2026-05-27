@@ -133,7 +133,11 @@ button {
   background: currentColor;
 }
 
-.yellow {
+.legend .white {
+  background: #faf7ff;
+}
+
+.legend .yellow {
   background: #ffe762;
 }
 

@@ -33,34 +33,34 @@ export const getReport = async (reportId, payload) => {
       startDate: "2026-05-26",
 
       graph: {
-        startTime: "2026-05-26T22:00:00Z",
-        endTime: "2026-05-27T07:00:00Z",
+        startTime: "2026-05-26 22:00:00",
+        endTime: "2026-05-27 07:00:00",
         snoreList: [
           {
-            startTime: "2026-05-26T23:25:00Z",
-            endTime: "2026-05-26T23:35:00Z",
+            startTime: "2026-05-26 23:25:00",
+            endTime: "2026-05-26 23:35:00",
           },
           {
-            startTime: "2026-05-27T00:00:00Z",
-            endTime: "2026-05-27T01:10:00Z",
+            startTime: "2026-05-27 00:00:00",
+            endTime: "2026-05-27 01:10:00",
           },
           {
-            startTime: "2026-05-27T04:15:00Z",
-            endTime: "2026-05-27T04:35:00Z",
+            startTime: "2026-05-27 04:15:00",
+            endTime: "2026-05-27 04:35:00",
           },
         ],
         alarmStamps: [
-          "2026-05-26T23:30:00Z",
-          "2026-05-27T01:05:00Z",
-          "2026-05-27T04:25:00Z",
+          "2026-05-26 23:30:00",
+          "2026-05-27 01:05:00",
+          "2026-05-27 04:25:00",
         ],
       },
 
       summary: {
         score: 60,
         sleepDuration: 28800000,
-        startTime: "2026-05-26T22:00:00Z",
-        endTime: "2026-05-27T07:00:00Z",
+        startTime: "2026-05-26 22:00:00",
+        endTime: "2026-05-27 07:00:00",
         snoreCount: 13,
         alarmsCount: 3,
       },
