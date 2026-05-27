@@ -1,10 +1,8 @@
 import apiClient from "@/utils/client";
-import { sleep } from "@/utils/common";
 
 export const getReportList = async (payload) => {
   // const response = await apiClient.get("/history");
   // return response.data;
-  await sleep(2000);
   return {
     success: true,
     data: {
@@ -12,7 +10,7 @@ export const getReportList = async (payload) => {
       reports: [
         {
           reportId: 1,
-          startDate: "2026-05-26",
+          startDate: "2026-05-26 FAKE",
           sleepDuration: 28800000,
           snoreCount: 13,
           alarmsCount: 3,
@@ -26,12 +24,11 @@ export const getReportList = async (payload) => {
 export const getReport = async (reportId, payload) => {
   // const response = await apiClient.get(`/history/reports/${reportId}`);
   // return response.data;
-  await sleep(2000);
   return {
     success: true,
     data: {
       reportId: 1,
-      startDate: "2026-05-26",
+      startDate: "2026-05-26 FAKE",
       sleepDuration: 28800000,
       startTime: "2026-05-26T22:00:00Z",
       endTime: "2026-05-27T07:00:00Z",
