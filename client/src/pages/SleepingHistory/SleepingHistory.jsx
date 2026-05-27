@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
+
 import {
   ChevronDown,
   CalendarDays,
@@ -11,9 +12,12 @@ import {
   User,
   ShieldCheck,
 } from "lucide-react";
-
 import styles from "./SleepingHistory.module.css";
 import sleepingPanda from "@/assets/images/sleepingPanda.png";
+
+import { getReport, getReportList } from "@/api/history";
+import { useAsync } from "@/hooks/useAsync";
+import { convertMsToTime, formatTime } from "@/utils/common";
 import DateSelectModal from "@/components/common/DateSelectModal";
 
 const savedDates = [
@@ -63,6 +67,43 @@ const SleepingHistory = () => {
     setSelectedDate(date);
     setIsDateModalOpen(false);
   };
+  const { execute: getReportAsync } = useAsync(getReport);
+  const { execute: getReportListAsync } = useAsync(getReportList);
+
+  const [currentReportId, setCurrentReportId] = useState(initialReportId);
+  const [reportData, setReportData] = useState(null);
+
+  const reportListRef = useRef([]);
+
+  const fetchReport = useCallback(
+    async (reportId) => {
+      if (!reportId) return;
+
+      const response = await getReportAsync(reportId);
+
+      if (!response.success) return;
+
+      setReportData(response.data);
+    },
+    [getReportAsync],
+  );
+
+  useEffect(() => {
+    fetchReport(currentReportId);
+  }, [currentReportId, fetchReport]);
+
+  useEffect(() => {
+    const initialize = async () => {
+      const response = await getReportListAsync();
+
+      if (!response.success) return;
+
+      reportListRef.current = response.data.reports;
+      setCurrentReportId(response.data.lastReportId);
+    };
+
+    initialize();
+  }, [getReportListAsync]);
 
   return (
     <main className={styles.screen}>
@@ -73,16 +114,17 @@ const SleepingHistory = () => {
         >
           <span>날짜</span>
           <strong>{selectedDate.label}</strong>
+          {/* <strong>{reportData?.startDate}</strong> */}
           <ChevronDown />
           <em>
             <CalendarDays />
             날짜 선택
           </em>
         </button>
-        <Timeline />
-        <Summary />
-        <Feedback />
-        <HistoryRows />
+        <Timeline graph={reportData?.graph} />
+        <Summary summaryData={reportData?.summary} />
+        <Feedback feedbackData={reportData?.feedback} />
+        <ProfileRows profileData={reportData?.profile} />
       </section>
 
       <DateSelectModal
@@ -108,7 +150,16 @@ const Card = ({ title, icon, children }) => {
   );
 };
 
-const Timeline = () => {
+const Timeline = ({ graphData }) => {
+  if (!graphData) return;
+
+  const {
+    startTime: sleepStartTime,
+    endTime: sleepEndTime,
+    snoreList,
+    alarmStamps,
+  } = graphData;
+
   return (
     <Card title="수면/코골이 타임라인" icon={<Waves />}>
       <div className={styles.legend}>
@@ -139,7 +190,7 @@ const Timeline = () => {
       </div>
       <div className={styles.sleepRange}>
         <span>{monitoringRange.start}</span>
-        
+
         <div />
         <span>{monitoringRange.end}</span>
       </div>
@@ -147,19 +198,31 @@ const Timeline = () => {
   );
 };
 
-const Summary = () => {
+const Summary = ({ summaryData }) => {
+  if (!summaryData) return;
+
+  const { score, sleepDuration, startTime, endTime, snoreCount, alarmsCount } =
+    summaryData;
+  const { hour: durationHour, minute: durationMinute } =
+    convertMsToTime(sleepDuration);
+  const { hour: startHour, minute: startMinute } = formatTime(startTime);
+  const { hour: endHour, minute: endMinute } = formatTime(endTime);
   const items = [
-    ["총 수면 시간", "6시간 12분", "23:58 ~ 06:10"],
-    ["코골이 감지", "12회", "보통"],
-    ["알람 발생", "3회", "보통"],
-    ["평균 소음", "42dB", "조용함"],
+    [
+      "총 수면 시간",
+      `${durationHour}시간\n${durationMinute}분`,
+      `${startHour}:${startMinute} ~ ${endHour}:${endMinute}`,
+    ],
+    ["코골이 감지", `${snoreCount}회`],
+    ["알람 발생", `${alarmsCount}회`],
   ];
+
   return (
     <Card title="한눈에 보는 수면 요약" icon={<Moon />}>
       <div className={styles.summaryGrid}>
         {/* 1. 왼쪽 점수 링 */}
         <div className={styles.scoreRing}>
-          <strong>82</strong>
+          <strong>{score}</strong>
           <span>점</span>
           <small>수면 점수</small>
         </div>
@@ -171,7 +234,7 @@ const Summary = () => {
               <span>{label}</span>
               <strong>{value}</strong>
               {/* 시안처럼 '조용함'일 때는 초록색 등 조건부 서식을 넣으면 더 완벽합니다 */}
-              <em>{note}</em>
+              {note && <em>{note}</em>}
             </div>
           ))}
         </div>
@@ -180,17 +243,18 @@ const Summary = () => {
   );
 };
 
-const Feedback = () => {
+const Feedback = ({ feedbackData }) => {
+  if (!feedbackData) return;
+
+  const { title, content, detail } = feedbackData;
+
   return (
     <Card title="AI 수면 피드백" icon={<Waves />}>
       <div className={styles.feedbackRow}>
         <img src={sleepingPanda} alt="잠자는 판다" />
         <div>
-          <h3>오늘은 보통 수준의 수면이었어요</h3>
-          <p>
-            코골이가 일부 구간에서 감지되었어요. 옆으로 눕는 자세와 규칙적인
-            취침 시간이 도움이 될 수 있어요.
-          </p>
+          <h3>{title}</h3>
+          <p>{content}</p>
           <button>
             자세한 팁 보기 <ChevronRight />
           </button>
@@ -200,7 +264,11 @@ const Feedback = () => {
   );
 };
 
-const HistoryRows = () => {
+const ProfileRows = ({ profileData }) => {
+  if (!profileData) return;
+
+  const { height, weight, sleepingPosture, alarmCondition } = profileData;
+
   const rows = [
     [Mic, "코골이 감지", "총 감지 횟수", "12회", "보통"],
     [Bell, "알람 발생", "총 알람 횟수", "3회", "보통"],

@@ -261,6 +261,7 @@ button {
   font-size: 18px;
   color: #fff;
   font-weight: 700;
+  white-space: pre-line;
 }
 
 .summaryItem em {
