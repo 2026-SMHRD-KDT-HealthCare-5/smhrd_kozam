@@ -269,26 +269,31 @@ const ProfileRows = ({ profileData }) => {
 
   const { height, weight, sleepingPosture, alarmCondition } = profileData;
 
+  const alarmConditionMap = {
+    1: "지속시간 기반",
+    2: "반복패턴 기반",
+    3: "알람 받지 않음",
+  };
+
   const rows = [
-    [Mic, "코골이 감지", "총 감지 횟수", "12회", "보통"],
-    [Bell, "알람 발생", "총 알람 횟수", "3회", "보통"],
     [
       User,
-      "사용자 프로필",
-      "등록된 사용자 정보",
-      "김코잠",
-      "1988.05.20 / 남성",
+      "사용자 신체 정보",
+      "평소수면자세",
+      `${height}cm / ${weight}kg`,
+      sleepingPosture,
     ],
+
     [
       ShieldCheck,
       "당시 알람 발생 조건",
-      "알람이 발생한 주요 요인",
-      "소음 50 dB 이상",
-      "자세 변화 · 코골이 감지",
+      "설정된 알람 방식",
+      // "모니터링 설정 기준",
+      alarmConditionMap[String(alarmCondition)] ?? "-",
     ],
   ];
   return rows.map(([Icon, title, sub, value, note]) => (
-    <button className={styles.historyRow} key={title}>
+    <div className={styles.historyRow} key={title}>
       <Icon />
       <span>
         <strong>{title}</strong>
@@ -298,8 +303,7 @@ const ProfileRows = ({ profileData }) => {
         {value}
         <small>{note}</small>
       </em>
-      <ChevronRight />
-    </button>
+    </div>
   ));
 };
 

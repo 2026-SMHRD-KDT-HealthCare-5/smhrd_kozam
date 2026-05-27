@@ -143,7 +143,7 @@ button {
   justify-content: space-between;
   gap: 4px;
   min-height: 82px;
-  margin-top: -25px;
+  margin-top: 10px;
 }
 
 .timelineBars span {
@@ -172,8 +172,8 @@ button {
 }
 
 .timelineBars .alarm {
-  height: 35px;
-  color: #5900ff;
+  height: 42px;
+  color: #faf7ff;
   background: currentColor;
 }
 
@@ -218,7 +218,7 @@ button {
 }
 
 .scoreRing strong {
-  font-size: 32px;
+  font-size: 28px;
   color: #fff;
   line-height: 1;
 }
