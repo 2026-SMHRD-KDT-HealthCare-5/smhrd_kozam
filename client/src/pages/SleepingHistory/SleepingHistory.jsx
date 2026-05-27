@@ -43,35 +43,24 @@ const savedDates = [
   },
 ];
 
-const monitoringRange = {
-  start: "23:58",
-  end: "06:25",
-};
+const formatDateKorean = (dateString) => {
+  if (!dateString) return;
 
-const timelineBars = Array.from({ length: 56 }, (_, index) => ({
-  id: index,
-  alarmTriggered: index === 13 || index === 26 || index === 37,
-  snoreDetected:
-    (index >= 8 && index <= 12) ||
-    (index >= 21 && index <= 25) ||
-    (index >= 33 && index <= 36) ||
-    (index >= 45 && index <= 50),
-}));
+  const [year, month, day] = dateString.split("-");
+
+  return `${year}년 ${Number(month)}월 ${Number(day)}일`;
+};
 
 const SleepingHistory = () => {
   const { reportId: initialReportId } = useParams();
-  const [selectedDate, setSelectedDate] = useState(savedDates[0]);
-  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
 
-  const handleSelectDate = (date) => {
-    setSelectedDate(date);
-    setIsDateModalOpen(false);
-  };
   const { execute: getReportAsync } = useAsync(getReport);
   const { execute: getReportListAsync } = useAsync(getReportList);
 
   const [currentReportId, setCurrentReportId] = useState(initialReportId);
   const [reportData, setReportData] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(savedDates[0]);
+  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
 
   const reportListRef = useRef([]);
 
@@ -87,6 +76,11 @@ const SleepingHistory = () => {
     },
     [getReportAsync],
   );
+
+  const handleSelectDate = (date) => {
+    setSelectedDate(date);
+    setIsDateModalOpen(false);
+  };
 
   useEffect(() => {
     fetchReport(currentReportId);
@@ -113,27 +107,27 @@ const SleepingHistory = () => {
           onClick={() => setIsDateModalOpen(true)}
         >
           <span>날짜</span>
-          <strong>{selectedDate.label}</strong>
-          {/* <strong>{reportData?.startDate}</strong> */}
+          {/* <strong>{selectedDate.label}</strong> */}
+          <strong>{formatDateKorean(reportData?.startDate)}</strong>
           <ChevronDown />
           <em>
             <CalendarDays />
             날짜 선택
           </em>
         </button>
-        <Timeline graph={reportData?.graph} />
+        <Timeline graphData={reportData?.graph} />
         <Summary summaryData={reportData?.summary} />
         <Feedback feedbackData={reportData?.feedback} />
         <ProfileRows profileData={reportData?.profile} />
       </section>
 
-      <DateSelectModal
+      {/* <DateSelectModal
         open={isDateModalOpen}
         dates={savedDates}
         selectedDateId={selectedDate.id}
         onSelect={handleSelectDate}
         onClose={() => setIsDateModalOpen(false)}
-      />
+      /> */}
     </main>
   );
 };
@@ -153,12 +147,36 @@ const Card = ({ title, icon, children }) => {
 const Timeline = ({ graphData }) => {
   if (!graphData) return;
 
-  const {
-    startTime: sleepStartTime,
-    endTime: sleepEndTime,
-    snoreList,
-    alarmStamps,
-  } = graphData;
+  const buildTimelineBars = (graph, totalBars = 50) => {
+    const start = new Date(graph.startTime).getTime();
+    const end = new Date(graph.endTime).getTime();
+    const duration = end - start;
+    const barDuration = duration / totalBars;
+
+    return Array.from({ length: totalBars }, (_, index) => {
+      const barStart = start + index * barDuration;
+      const barEnd = barStart + barDuration;
+
+      const snoreDetected = graph.snoreList.some((snore) => {
+        const snoreStart = new Date(snore.startTime).getTime();
+        const snoreEnd = new Date(snore.endTime).getTime();
+        return snoreStart < barEnd && snoreEnd > barStart; // 겹침 여부
+      });
+
+      const alarmTriggered = graph.alarmStamps.some((stamp) => {
+        const alarmTime = new Date(stamp).getTime();
+        return alarmTime >= barStart && alarmTime < barEnd;
+      });
+
+      return { id: index, alarmTriggered, snoreDetected };
+    });
+  };
+
+  const timelineBars = buildTimelineBars(graphData);
+  const { hour: startHour, minute: startMinute } = formatTime(
+    graphData.startTime,
+  );
+  const { hour: endHour, minute: endMinute } = formatTime(graphData.endTime);
 
   return (
     <Card title="수면/코골이 타임라인" icon={<Waves />}>
@@ -189,10 +207,10 @@ const Timeline = ({ graphData }) => {
         })}
       </div>
       <div className={styles.sleepRange}>
-        <span>{monitoringRange.start}</span>
+        <span>{`${startHour}:${startMinute}`}</span>
 
         <div />
-        <span>{monitoringRange.end}</span>
+        <span>{`${endHour}:${endMinute}`}</span>
       </div>
     </Card>
   );

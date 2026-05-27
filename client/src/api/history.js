@@ -37,11 +37,23 @@ export const getReport = async (reportId, payload) => {
         endTime: "2026-05-27T07:00:00Z",
         snoreList: [
           {
-            startTime: "2026-05-27T01:00:00Z",
-            endTime: "2026-05-27T01:15:00Z",
+            startTime: "2026-05-26T23:25:00Z",
+            endTime: "2026-05-26T23:35:00Z",
+          },
+          {
+            startTime: "2026-05-27T00:00:00Z",
+            endTime: "2026-05-27T01:10:00Z",
+          },
+          {
+            startTime: "2026-05-27T04:15:00Z",
+            endTime: "2026-05-27T04:35:00Z",
           },
         ],
-        alarmStamps: ["2026-05-26T23:30:00Z", "2026-05-27T04:25:00Z"],
+        alarmStamps: [
+          "2026-05-26T23:30:00Z",
+          "2026-05-27T01:05:00Z",
+          "2026-05-27T04:25:00Z",
+        ],
       },
 
       summary: {
@@ -57,7 +69,8 @@ export const getReport = async (reportId, payload) => {
         title: "어떠한 수면이었어요.",
         content:
           "피드백 세줄 요약 피드백 세줄 요약 피드백 세줄 요약 피드백 세줄 요약 피드백 세줄 요약",
-        detail: "상세 피드백 상세 피드백 상세 피드백 상세 피드백 상세 피드백 상세 피드백 상세 피드백 상세 피드백 상세 피드백 상세 피드백 상세 피드백 상세 피드백",
+        detail:
+          "상세 피드백 상세 피드백 상세 피드백 상세 피드백 상세 피드백 상세 피드백 상세 피드백 상세 피드백 상세 피드백 상세 피드백 상세 피드백 상세 피드백",
       },
 
       profile: {
