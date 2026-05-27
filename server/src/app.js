@@ -7,6 +7,7 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerJsdoc = require("swagger-jsdoc");
 const userRoutes = require("./routes/user_routes");
 require("dotenv").config();
+const monitoringRoutes = require("./routes/monitoring_routes"); //모니터링 라우터추가
 
 // ==========================================
 // 0. Swagger (스웨거) 설정 정의
@@ -38,6 +39,9 @@ app.use(
     origin: `http://localhost:${process.env.CORS_PORT}`,
   }),
 );
+
+// 모니터링 라우터 추가 - 모니터링 관련된건 monitoring 들어간 파일에서 전부 처리
+app.use("/api/monitoring", monitoringRoutes);
 
 // 2. json 파싱
 app.use(express.json());
