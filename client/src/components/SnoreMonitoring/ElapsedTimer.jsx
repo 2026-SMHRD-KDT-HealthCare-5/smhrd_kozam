@@ -3,7 +3,7 @@ import styles from "@/pages/SnoreMonitoring/SnoreMonitoring.module.css";
 
 import { Waves } from "lucide-react";
 
-import { formatTime } from "@/utils/common";
+import { formatSecondsToTime } from "@/utils/common";
 
 const ElapsedTimer = ({ isRunning }) => {
   const [seconds, setSeconds] = useState(0);
@@ -16,9 +16,9 @@ const ElapsedTimer = ({ isRunning }) => {
 
   return (
     <div className={styles.elapsed}>
-      <Waves />
+      {/* <Waves /> */}
       경과 시간
-      <strong>{formatTime(seconds)}</strong>
+      <strong>{formatSecondsToTime(seconds)}</strong>
     </div>
   );
 };

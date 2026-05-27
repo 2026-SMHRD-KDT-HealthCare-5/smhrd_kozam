@@ -13,3 +13,424 @@
   background-position: center;
   background-repeat: no-repeat;
 }
+
+/* 전역 태그 및 공통 스타일 */
+button {
+  color: inherit;
+  cursor: pointer;
+}
+
+.contentStack {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+}
+
+/* ==========================================================================
+   1. 날짜 카드 정렬 수정
+   ========================================================================== */
+.dateCard {
+  border: 1px solid rgba(211, 195, 255, 0.14);
+  background: linear-gradient(
+    135deg,
+    rgba(28, 24, 62, 0.92),
+    rgba(9, 9, 38, 0.94)
+  );
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 18px;
+  border-radius: 17px;
+  text-align: left;
+  width: 100%;
+}
+
+/* 왼쪽 날짜 텍스트 묶음 */
+.dateCard span,
+.dateCard strong {
+  display: block;
+}
+
+.dateCard span {
+  color: #b06cff;
+  font-weight: 600;
+  font-size: 12px;
+  /* margin-bottom: 4px; */
+}
+
+.dateCard strong {
+  margin-left: -55px;
+  font-size: 18px;
+  color: #fff;
+}
+
+/* 우측 날짜 선택 버튼 모음 */
+.dateCard em {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.065);
+  color: #e4dff0;
+  font-style: normal;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* 2. Card 컴포넌트 관련 */
+.card {
+  border: 1px solid rgba(211, 195, 255, 0.14);
+  background: linear-gradient(
+    135deg,
+    rgba(28, 24, 62, 0.92),
+    rgba(9, 9, 38, 0.94)
+  );
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.04);
+  position: relative;
+  padding: 18px;
+  border-radius: 17px;
+}
+
+.card h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 0px;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.card h2 svg {
+  color: #a65cff;
+}
+
+/* 3. Timeline 컴포넌트 관련 */
+.legend {
+  position: absolute;
+  top: 22px;
+  right: 18px;
+  display: flex;
+  gap: 14px;
+  color: #bdb5ca;
+  font-size: 12px;
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.legend .white {
+  background: #faf7ff;
+}
+
+.legend .yellow {
+  background: #ffe762;
+}
+
+.timelineBars {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 4px;
+  min-height: 82px;
+  margin-top: 10px;
+}
+
+.timelineBars span {
+  flex: 1;
+  min-width: 4px;
+  max-width: 7px;
+  height: 30px;
+  border-radius: 99px;
+  box-shadow: 0 0 9px currentColor;
+}
+
+.purple {
+  color: #a45cff;
+  background: currentColor;
+}
+
+/* timelineBars 전용 노란색 처리 */
+.timelineBars .yellow {
+  color: #ffd862;
+  background: currentColor;
+}
+
+.timelineBars .alarm {
+  height: 42px;
+  color: #faf7ff;
+  background: currentColor;
+}
+
+/* timelineBars 시간 폰트 설정 */
+.sleepRange {
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+  color: #aaa2b8;
+  font-size: 13px;
+}
+
+.sleepRange div {
+  flex: 1;
+  height: 14px;
+  background: linear-gradient(90deg, #ad55ff00, #7435d300);
+}
+
+/* ==========================================================================
+   2. 한눈에 보는 수면 요약 그리드 전면 수정
+   ========================================================================== */
+.summaryGrid {
+  display: flex; /* grid 대신 flex로 크게 두 덩어리(차트 / 아이템들) 분리 */
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+
+.scoreRing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px;
+  margin-top: 15px;
+  /* margin-right: ; */
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, #111024 53%, transparent 54%),
+    conic-gradient(#a34fff 82%, #251843 0);
+  box-shadow: 0 0 22px rgba(152, 70, 255, 0.42);
+}
+
+.scoreRing strong {
+  font-size: 32px;
+  font-weight: 500;
+  color: #fff;
+  line-height: 1;
+}
+
+.scoreRing span {
+  font-size: 13px;
+  color: #fff;
+  margin-top: 2px;
+}
+
+/* 우측 4개 아이템들을 담을 컨테이너 (정확히 4열 배치) */
+.summaryGrid > div:not(.scoreRing) {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  flex-grow: 1;
+}
+
+/* 각각의 요약 카드 스타일 */
+.summaryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  margin-left: 20px;
+}
+
+.summaryItem span {
+  color: #b6adc7;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.summaryItem strong {
+  font-size: 18px;
+  color: #fff;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.summaryItem em {
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(255, 215, 75, 0.1);
+  color: #ffe35e;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 5. Feedback 컴포넌트 관련 */
+.feedbackRow {
+  display: grid;
+  grid-template-columns: 42% 1fr;
+  gap: 14px;
+  align-items: center;
+}
+
+.feedbackRow img {
+  width: 100%;
+  border-radius: 14px;
+}
+
+.feedbackRow h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.feedbackRow p {
+  margin: 0 0 12px;
+  color: #c8c0d4;
+  line-height: 1.55;
+}
+
+.feedbackRow > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.feedbackRow button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+
+  width: fit-content;
+  margin-left: auto;
+
+  border: 1px solid rgba(181, 107, 255, 0.051);
+  border-radius: 22px;
+  padding: 8px 12px;
+
+  background: rgba(150, 63, 255, 0.16);
+
+  color: #c383ffa9;
+  font-size: 13px;
+  font-weight: 300;
+}
+
+.feedbackRow button svg {
+  width: 15px;
+  height: 15px;
+  margin-right: -5px;
+}
+/* ==========================================================================
+   3. 히스토리 로우 (아이콘 및 텍스트 정렬) 수정
+   ========================================================================== */
+.historyRow {
+  border: 1px solid rgba(211, 195, 255, 0.14);
+  background: linear-gradient(
+    135deg,
+    rgba(28, 24, 62, 0.92),
+    rgba(9, 9, 38, 0.94)
+  );
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  min-height: 76px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  text-align: left;
+  margin-bottom: 10px;
+}
+
+/* 왼쪽 아이콘 + 타이틀 묶음 구역 */
+.historyRow > svg:first-child {
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #9742ed, #4b249a);
+  flex-shrink: 0;
+  margin-right: 14px;
+  color: white;
+}
+
+.historyRow span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-grow: 1;
+}
+
+.historyRow span strong {
+  font-size: 16px;
+  color: #fff;
+}
+
+.historyRow span small {
+  color: #b6adc7;
+  font-size: 13px;
+}
+
+/* 우측 데이터 결과 구역 */
+.historyRow em {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  font-style: normal;
+  font-weight: 700;
+  margin-right: 12px;
+  color: white;
+}
+
+.historyRow em small {
+  font-weight: 500;
+  color: #ffe35e; /* '보통' 노란색 포인트 */
+  font-size: 13px;
+}
+
+/* 꺾쇠 아이콘 크기 제어 */
+.historyRow > svg:last-child {
+  width: 18px;
+  height: 18px;
+  color: #6b6680;
+  flex-shrink: 0;
+}
+
+/* 7. 미디어 쿼리 반응형 스타일 */
+@media (max-width: 430px) {
+  .summaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .scoreRing {
+    margin: auto;
+    grid-column: 1 / -1;
+  }
+
+  .legend {
+    position: static;
+    margin-bottom: 8px;
+  }
+
+  .feedbackRow {
+    grid-template-columns: 1fr;
+  }
+
+  .dateCard {
+    grid-template-columns: 1fr auto;
+  }
+
+  .dateCard em {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
+}
