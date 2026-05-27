@@ -43,6 +43,11 @@ app.use(
 // 모니터링 라우터 추가 - 모니터링 관련된건 monitoring 들어간 파일에서 전부 처리
 app.use("/api/monitoring", monitoringRoutes);
 
+//히스토리 라우터 추가 - 히스토리 관련된건 history 들어간 파일에서 전부 처치
+const historyRoutes = require("./routes/history_routes");
+
+app.use("/history", historyRoutes);
+
 // 2. json 파싱
 app.use(express.json());
 
