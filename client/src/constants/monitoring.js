@@ -22,7 +22,7 @@ export const STATUS_CONFIG = {
     },
   },
   [MONITORING_STATUS.RUNNING]: {
-    text: "모니터링중",
+    text: "모니터링 중...",
     image: runningPanda,
     button: {
       label: "모니터링 중지",
@@ -31,7 +31,7 @@ export const STATUS_CONFIG = {
     },
   },
   [MONITORING_STATUS.FINISHING]: {
-    text: "오늘의 수면 AI 분석중...",
+    text: "오늘의 수면 AI 분석중",
     image: finishingPanda,
     button: {
       label: "수면 분석중...",
