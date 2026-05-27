@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "MyFontGothic";
+  src: url("@/assets/fonts/PyeojinGothic-Semibold.woff2") format("woff2");
+  /* font-weight: 400; */
+  font-style: normal;
+  font-display: swap;
+}
+
 .screen {
   position: relative;
   width: 100%;
@@ -25,7 +33,7 @@ button {
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 10px;
   padding: 18px;
 }
 
@@ -33,7 +41,7 @@ button {
    1. 날짜 카드 정렬 수정
    ========================================================================== */
 .dateCard {
-  border: 1px solid rgba(211, 195, 255, 0.14);
+  border: 1px solid rgba(211, 195, 255, 0.05);
   background: linear-gradient(
     135deg,
     rgba(28, 24, 62, 0.92),
@@ -56,15 +64,16 @@ button {
 }
 
 .dateCard span {
-  color: #b06cff;
+  color: #b16cffce;
   font-weight: 600;
-  font-size: 12px;
+  font-size: 14px;
   /* margin-bottom: 4px; */
 }
 
 .dateCard strong {
-  margin-left: -55px;
-  font-size: 18px;
+  margin-left: -60px;
+  font-size: 16px;
+  font-weight: 400;
   color: #fff;
 }
 
@@ -78,8 +87,8 @@ button {
   background: rgba(255, 255, 255, 0.065);
   color: #e4dff0;
   font-style: normal;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 /* 2. Card 컴포넌트 관련 */
@@ -106,7 +115,10 @@ button {
 }
 
 .card h2 svg {
-  color: #a65cff;
+  color: #a55cffbe;
+  /* transform: scale(1); */
+  width: 30px;
+  height: 30px;
 }
 
 /* 3. Timeline 컴포넌트 관련 */
@@ -145,35 +157,67 @@ button {
   display: flex;
   align-items: end;
   justify-content: space-between;
-  gap: 4px;
+  gap: 5px;
   min-height: 82px;
   margin-top: 10px;
 }
 
 .timelineBars span {
+  position: relative;
   flex: 1;
-  min-width: 4px;
-  max-width: 7px;
+  min-width: 3px;
   height: 30px;
   border-radius: 99px;
-  box-shadow: 0 0 9px currentColor;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.62),
+    currentColor 34%,
+    currentColor 78%,
+    rgba(0, 0, 0, 0.18)
+  );
+}
+
+.timelineBars span[data-time]:hover::before {
+  content: attr(data-time);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  z-index: 3;
+  transform: translateX(-50%);
+  padding: 6px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(10, 8, 32, 0.94);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
+}
+
+.timelineBars span[data-time]:hover::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 5px);
+  z-index: 3;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(10, 8, 32, 0.94);
 }
 
 .purple {
   color: #a45cff;
-  background: currentColor;
 }
 
 /* timelineBars 전용 노란색 처리 */
 .timelineBars .yellow {
-  color: #ffd862;
-  background: currentColor;
+  color: #f8fd77;
 }
 
 .timelineBars .alarm {
   height: 42px;
   color: #faf7ff;
-  background: currentColor;
 }
 
 /* timelineBars 시간 폰트 설정 */
@@ -208,46 +252,80 @@ button {
   justify-content: center;
   margin-left: 10px;
   margin-top: 15px;
-  /* margin-right: ; */
   width: 120px;
   height: 120px;
   flex-shrink: 0;
   border-radius: 50%;
   background:
-    radial-gradient(circle at center, #111024 53%, transparent 54%),
-    conic-gradient(#a34fff 82%, #251843 0);
-  box-shadow: 0 0 22px rgba(152, 70, 255, 0.42);
+    radial-gradient(circle at center, #121028 0 61%, transparent 62%),
+    conic-gradient(from -22deg, #e3b3ff 0 10%, #b85dff 10% 82%, #30204d 82% 100%);
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.25),
+    0 0 50px rgba(157, 77, 255, 0.22),
+    inset 0 1px rgba(255, 255, 255, 0.08);
+  position: relative;
+}
+
+.scoreRing::before {
+  content: "";
+  position: absolute;
+  inset: 15px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.36);
+}
+
+.scoreRing::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 30%);
+  pointer-events: none;
 }
 
 .scoreRing strong {
-  font-size: 32px;
-  font-weight: 500;
+  font-family: "MyFontGothic";
+  font-size: 30px;
+  font-weight: 400;
   color: #fff;
   line-height: 1;
 }
 
 .scoreRing span {
+  font-family: "MyFontGothic";
   font-size: 13px;
-  color: #fff;
+  font-weight: 200;
+  color: #ffffffbe;
   margin-top: 2px;
 }
 
-/* 우측 4개 아이템들을 담을 컨테이너 (정확히 4열 배치) */
+/* 우측 요약 아이템들을 담을 컨테이너 */
 .summaryGrid > div:not(.scoreRing) {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 0;
   flex-grow: 1;
 }
 
 /* 각각의 요약 카드 스타일 */
 .summaryItem {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: 6px;
-  margin-left: 20px;
+}
+
+.summaryItem:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  right: 0;
+  width: 1px;
+  height: calc(100% - 16px);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .summaryItem span {
@@ -257,9 +335,9 @@ button {
 }
 
 .summaryItem strong {
-  font-size: 18px;
+  font-size: 16px;
   color: #fff;
-  font-weight: 700;
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -284,18 +362,26 @@ button {
 .feedbackRow img {
   width: 100%;
   border-radius: 14px;
+  margin-left: -15px;
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    black 52%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(ellipse at center, black 52%, transparent 100%);
 }
 
 .feedbackRow h3 {
   margin: 0 0 8px;
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 500;
 }
 
 .feedbackRow p {
   margin: 0 0 12px;
-  color: #c8c0d4;
+  color: #c8c0d4b5;
   line-height: 1.55;
+  font-size: 13px;
 }
 
 .feedbackRow > div {
@@ -312,13 +398,13 @@ button {
   width: fit-content;
   margin-left: auto;
 
-  border: 1px solid rgba(181, 107, 255, 0.051);
+  border: 1px solid rgba(212, 188, 236, 0.051);
   border-radius: 22px;
-  padding: 8px 12px;
+  padding: 6px 12px;
 
   background: rgba(150, 63, 255, 0.16);
 
-  color: #c383ffa9;
+  color: #c383ffb8;
   font-size: 13px;
   font-weight: 300;
 }
@@ -347,7 +433,6 @@ button {
   padding: 16px 20px;
   border-radius: 16px;
   text-align: left;
-  margin-bottom: 10px;
 }
 
 /* 왼쪽 아이콘 + 타이틀 묶음 구역 */
@@ -370,7 +455,8 @@ button {
 }
 
 .historyRow span strong {
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: 500;
   color: #fff;
 }
 
@@ -386,15 +472,14 @@ button {
   align-items: flex-end;
   gap: 4px;
   font-style: normal;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 500;
   margin-right: 12px;
   color: white;
 }
 
 .historyRow em small {
   font-weight: 500;
-  color: #ffe35e; /* '보통' 노란색 포인트 */
-  font-size: 13px;
 }
 
 /* 꺾쇠 아이콘 크기 제어 */

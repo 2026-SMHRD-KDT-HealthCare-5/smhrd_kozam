@@ -7,13 +7,13 @@ import {
   Waves,
   Moon,
   ChevronRight,
-  Mic,
-  Bell,
   User,
   ShieldCheck,
 } from "lucide-react";
+import { TbMoonStars } from "react-icons/tb";
+
 import styles from "./SleepingHistory.module.css";
-import sleepingPanda from "@/assets/images/sleepingPanda.png";
+import sleepingPanda from "@/assets/images/historyPanda.png";
 
 import { getReport, getReportList } from "@/api/history";
 import { useAsync } from "@/hooks/useAsync";
@@ -170,12 +170,14 @@ const Timeline = ({ graphData }) => {
         return snoreStart < barEnd && snoreEnd > barStart; // 겹침 여부
       });
 
-      const alarmTriggered = graph.alarmStamps.some((stamp) => {
+      const alarmStamp = graph.alarmStamps.find((stamp) => {
         const alarmTime = new Date(stamp).getTime();
         return alarmTime >= barStart && alarmTime < barEnd;
       });
+      const alarmTriggered = Boolean(alarmStamp);
+      const alarmTime = alarmStamp ? formatTime(alarmStamp) : null;
 
-      return { id: index, alarmTriggered, snoreDetected };
+      return { id: index, alarmTriggered, snoreDetected, alarmTime };
     });
   };
 
@@ -186,7 +188,7 @@ const Timeline = ({ graphData }) => {
   const { hour: endHour, minute: endMinute } = formatTime(graphData.endTime);
 
   return (
-    <Card title="수면/코골이 타임라인" icon={<Waves />}>
+    <Card title="수면/코골이 타임라인" icon={<TbMoonStars />}>
       <div className={styles.legend}>
         {TIMELINE_LEGEND.map((legend) => {
           return (
@@ -210,7 +212,18 @@ const Timeline = ({ graphData }) => {
               ? "코골이 감지"
               : "감지 없음";
 
-          return <span key={bar.id} className={barClassName} title={label} />;
+          return (
+            <span
+              key={bar.id}
+              className={barClassName}
+              title={label}
+              data-time={
+                bar.alarmTime
+                  ? `${bar.alarmTime.hour}:${bar.alarmTime.minute}`
+                  : undefined
+              }
+            />
+          );
         })}
       </div>
       <div className={styles.sleepRange}>
@@ -239,7 +252,7 @@ const Summary = ({ summaryData }) => {
   ];
 
   return (
-    <Card title="한눈에 보는 수면 요약" icon={<Moon />}>
+    <Card title="한눈에 보는 수면 요약" icon={<TbMoonStars />}>
       <div className={styles.summaryGrid}>
         {/* 1. 왼쪽 점수 링 */}
         <div className={styles.scoreRing}>
@@ -269,7 +282,7 @@ const Feedback = ({ feedbackData }) => {
   const { title, content, detail } = feedbackData;
 
   return (
-    <Card title="AI 수면 피드백" icon={<Waves />}>
+    <Card title="AI 수면 피드백" icon={<TbMoonStars />}>
       <div className={styles.feedbackRow}>
         <img src={sleepingPanda} alt="잠자는 판다" />
         <div>
