@@ -228,8 +228,8 @@ const Summary = ({ summaryData }) => {
   const items = [
     [
       "총 수면 시간",
-      `${durationHour}시간\n${durationMinute}분`,
-      `${startHour}:${startMinute} ~ ${endHour}:${endMinute}`,
+      `${durationHour}시간 ${durationMinute}분`,
+      // `${startHour}:${startMinute} ~ ${endHour}:${endMinute}`,
     ],
     ["코골이 감지", `${snoreCount}회`],
     ["알람 발생", `${alarmsCount}회`],
@@ -242,7 +242,6 @@ const Summary = ({ summaryData }) => {
         <div className={styles.scoreRing}>
           <strong>{score}</strong>
           <span>점</span>
-          <small>수면 점수</small>
         </div>
 
         {/* 2. 오른쪽 4개 정보 그리드 (div로 한 번 감싸줍니다) */}
