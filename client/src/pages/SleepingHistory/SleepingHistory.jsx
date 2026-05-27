@@ -20,6 +20,7 @@ import { useAsync } from "@/hooks/useAsync";
 import { convertMsToTime, formatTime } from "@/utils/common";
 import DateSelectModal from "@/components/common/DateSelectModal";
 
+// TODO: 실제 데이터로 대체하기
 const savedDates = [
   {
     id: "2026-05-26",
@@ -41,6 +42,12 @@ const savedDates = [
     label: "2026년 5월 23일",
     summary: "수면 6시간 31분 · 코골이 10회",
   },
+];
+
+const TIMELINE_LEGEND = [
+  { type: "ALARM", label: "알람 발생", class: "white" },
+  { type: "SNORE", label: "코골이 발생", class: "yellow" },
+  { type: "NORMAL", label: "일반 수면", class: "purple" },
 ];
 
 const formatDateKorean = (dateString) => {
@@ -181,14 +188,14 @@ const Timeline = ({ graphData }) => {
   return (
     <Card title="수면/코골이 타임라인" icon={<Waves />}>
       <div className={styles.legend}>
-        <span>
-          <i className={styles.yellow} />
-          코골이 감지
-        </span>
-        <span>
-          <i className={styles.alarm} />
-          알람 발생
-        </span>
+        {TIMELINE_LEGEND.map((legend) => {
+          return (
+            <span key={legend.type}>
+              <i className={styles[legend.class]} />
+              {legend.label}
+            </span>
+          );
+        })}
       </div>
       <div className={styles.timelineBars}>
         {timelineBars.map((bar) => {
@@ -226,11 +233,7 @@ const Summary = ({ summaryData }) => {
   const { hour: startHour, minute: startMinute } = formatTime(startTime);
   const { hour: endHour, minute: endMinute } = formatTime(endTime);
   const items = [
-    [
-      "총 수면 시간",
-      `${durationHour}시간\n${durationMinute}분`,
-      `${startHour}:${startMinute} ~ ${endHour}:${endMinute}`,
-    ],
+    ["총 수면 시간", `${durationHour}시간 ${durationMinute}분`],
     ["코골이 감지", `${snoreCount}회`],
     ["알람 발생", `${alarmsCount}회`],
   ];
