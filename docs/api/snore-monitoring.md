@@ -78,6 +78,7 @@ PATCH /monitoring/sessions/:sessionId/end
   "title": "어떠한 수면이었어요.",
   "content": "피드백 세줄 요약",
   "detail": "상세 피드백"
+  "score":80,
 }
 ```
 

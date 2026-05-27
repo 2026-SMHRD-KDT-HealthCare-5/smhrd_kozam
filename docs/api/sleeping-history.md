@@ -7,7 +7,7 @@
 ### Endpoint
 
 ```http
-GET /history
+GET /history/reports
 ```
 
 ### res
@@ -19,6 +19,7 @@ GET /history
     "lastReportId": 1,
     "reports": [
       {
+        "reportId": 1,
         "startDate": "2026-05-26",
         "sleepDuration": 28800000,
         "snoreCount": 13,
@@ -37,7 +38,7 @@ GET /history
 ### Endpoint
 
 ```http
-GET /history/:reportId
+GET /history/reports/:reportId
 ```
 
 ### res
@@ -46,15 +47,15 @@ GET /history/:reportId
 {
   "success": true,
   "data": {
+    "reportId": 1,
     "startDate": "2026-05-26",
     "sleepDuration": 28800000,
     "startTime": "2026-05-26T22:00:00Z",
     "endTime": "2026-05-27T07:00:00Z",
+    "snoreCount": 13,
+    "alarmsCount": 3,
     "alarmCondition": "2",
-    "alarmStamps": [
-      "2026-05-26T23:30:00Z",
-      "2026-05-27T04:25:00Z"
-    ],
+    "alarmStamps": ["2026-05-26T23:30:00Z", "2026-05-27T04:25:00Z"],
     "feedback": {
       "title": "어떠한 수면이었어요.",
       "content": "피드백 세줄 요약",
