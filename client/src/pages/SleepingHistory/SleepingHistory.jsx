@@ -18,31 +18,7 @@ import sleepingPanda from "@/assets/images/historyPanda.png";
 import { getReport, getReportList } from "@/api/history";
 import { useAsync } from "@/hooks/useAsync";
 import { convertMsToTime, formatTime } from "@/utils/common";
-import DateSelectModal from "@/components/common/DateSelectModal";
-
-// TODO: 실제 데이터로 대체하기
-const savedDates = [
-  {
-    id: "2026-05-26",
-    label: "2026년 5월 26일",
-    summary: "수면 6시간 12분 · 코골이 12회",
-  },
-  {
-    id: "2026-05-25",
-    label: "2026년 5월 25일",
-    summary: "수면 7시간 04분 · 코골이 8회",
-  },
-  {
-    id: "2026-05-24",
-    label: "2026년 5월 24일",
-    summary: "수면 5시간 48분 · 코골이 15회",
-  },
-  {
-    id: "2026-05-23",
-    label: "2026년 5월 23일",
-    summary: "수면 6시간 31분 · 코골이 10회",
-  },
-];
+import ReportSelectModal from "@/components/SleepingHistory/ReportSelectModal";
 
 const TIMELINE_LEGEND = [
   { type: "ALARM", label: "알람 발생", class: "white" },
@@ -66,8 +42,7 @@ const SleepingHistory = () => {
 
   const [currentReportId, setCurrentReportId] = useState(initialReportId);
   const [reportData, setReportData] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(savedDates[0]);
-  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const reportListRef = useRef([]);
 
@@ -84,9 +59,10 @@ const SleepingHistory = () => {
     [getReportAsync],
   );
 
-  const handleSelectDate = (date) => {
-    setSelectedDate(date);
-    setIsDateModalOpen(false);
+  const handleSelectReport = (reportId) => {
+    if (!reportId) return;
+    setCurrentReportId(reportId);
+    setIsReportModalOpen(false);
   };
 
   useEffect(() => {
@@ -111,7 +87,7 @@ const SleepingHistory = () => {
       <section className={styles.contentStack}>
         <button
           className={styles.dateCard}
-          onClick={() => setIsDateModalOpen(true)}
+          onClick={() => setIsReportModalOpen(true)}
         >
           <span>날짜</span>
           {/* <strong>{selectedDate.label}</strong> */}
@@ -127,14 +103,14 @@ const SleepingHistory = () => {
         <Feedback feedbackData={reportData?.feedback} />
         <ProfileRows profileData={reportData?.profile} />
       </section>
-
-      {/* <DateSelectModal
-        open={isDateModalOpen}
-        dates={savedDates}
-        selectedDateId={selectedDate.id}
-        onSelect={handleSelectDate}
-        onClose={() => setIsDateModalOpen(false)}
-      /> */}
+      <ReportSelectModal
+        open={isReportModalOpen}
+        reportList={reportListRef.current}
+        selectedReportId={currentReportId}
+        onSelect={handleSelectReport}
+        onClose={() => setIsReportModalOpen(false)}
+      />
+      ReportSelectModal
     </main>
   );
 };
@@ -239,12 +215,9 @@ const Timeline = ({ graphData }) => {
 const Summary = ({ summaryData }) => {
   if (!summaryData) return;
 
-  const { score, sleepDuration, startTime, endTime, snoreCount, alarmsCount } =
-    summaryData;
+  const { score, sleepDuration, snoreCount, alarmsCount } = summaryData;
   const { hour: durationHour, minute: durationMinute } =
     convertMsToTime(sleepDuration);
-  const { hour: startHour, minute: startMinute } = formatTime(startTime);
-  const { hour: endHour, minute: endMinute } = formatTime(endTime);
   const items = [
     ["총 수면 시간", `${durationHour}시간 ${durationMinute}분`],
     ["코골이 감지", `${snoreCount}회`],
