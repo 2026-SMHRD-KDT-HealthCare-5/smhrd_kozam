@@ -20,7 +20,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-server/src/config/database.js
+.eslintcache
 
 # Python (ai 폴더 관련)
 __pycache__/
@@ -30,6 +30,8 @@ __pycache__/
 venv/
 ENV/
 .pytest_cache/
+.ipynb_checkpoints/
+
 
 # Build Output (공통 빌드 결과물)
 dist/

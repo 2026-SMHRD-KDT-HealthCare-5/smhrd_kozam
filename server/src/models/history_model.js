@@ -51,7 +51,6 @@ const findReports = async (historyQueryData = {}) => {
   `;
 
   const [rows] = await db.query(sql, [userIdx]);
-  console.log(`rows: ${[rows]}`);
 
   return rows;
 };
