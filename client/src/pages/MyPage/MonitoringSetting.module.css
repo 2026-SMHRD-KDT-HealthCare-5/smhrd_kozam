@@ -93,7 +93,7 @@
 }
 
 .option.active > svg {
-  color: #b85cffbe;
+  color: #b45dff;
   transition: color 0.2s ease;
 }
 

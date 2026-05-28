@@ -16,8 +16,6 @@ const db = require("../config/database");
  */
 const findReports = async (historyQueryData = {}) => {
   const { userIdx } = historyQueryData;
-  console.log(`userIdx: ${userIdx}`);
-  console.log(`userIdx: ${typeof userIdx}`);
 
   const sql = `
     SELECT
