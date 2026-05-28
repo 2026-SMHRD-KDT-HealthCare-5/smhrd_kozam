@@ -9,7 +9,8 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "start": "concurrently \"npm run start:client\" \"npm run start:server\" \"npm run start:ai\"",
+    "start": "npm run start:client",
+    "start:all": "concurrently \"npm run start:client\" \"npm run start:server\"",
     "start:client": "npm -w client start",
     "start:server": "npm -w server start",
     "start:ai": "cd ai && .\\.venv\\Scripts\\activate && uvicorn main:app --host 127.0.0.1 --port 8000 --reload"
