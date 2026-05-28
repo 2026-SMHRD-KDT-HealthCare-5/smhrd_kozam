@@ -101,8 +101,8 @@ button {
   align-items: center;
   gap: 10px;
   margin: 0 0 0px;
-  font-weight: 600;
-  font-size: 18px;
+  font-weight: 500;
+  font-size: 15px;
 }
 
 .card h2 svg {
@@ -133,7 +133,11 @@ button {
   background: currentColor;
 }
 
-.yellow {
+.legend .white {
+  background: #faf7ff;
+}
+
+.legend .yellow {
   background: #ffe762;
 }
 
@@ -143,7 +147,7 @@ button {
   justify-content: space-between;
   gap: 4px;
   min-height: 82px;
-  margin-top: -25px;
+  margin-top: 10px;
 }
 
 .timelineBars span {
@@ -160,11 +164,6 @@ button {
   background: currentColor;
 }
 
-/* .alarm {
-  color: #ff1b17;
-  background: currentColor;
-} */
-
 /* timelineBars 전용 노란색 처리 */
 .timelineBars .yellow {
   color: #ffd862;
@@ -172,8 +171,8 @@ button {
 }
 
 .timelineBars .alarm {
-  height: 35px;
-  color: #5900ff;
+  height: 42px;
+  color: #faf7ff;
   background: currentColor;
 }
 
@@ -207,8 +206,11 @@ button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 110px;
-  height: 110px;
+  margin-left: 10px;
+  margin-top: 15px;
+  /* margin-right: ; */
+  width: 120px;
+  height: 120px;
   flex-shrink: 0;
   border-radius: 50%;
   background:
@@ -219,6 +221,7 @@ button {
 
 .scoreRing strong {
   font-size: 32px;
+  font-weight: 500;
   color: #fff;
   line-height: 1;
 }
@@ -229,11 +232,6 @@ button {
   margin-top: 2px;
 }
 
-.scoreRing small {
-  color: #a85cff;
-  font-size: 11px;
-  margin-top: 4px;
-}
 /* 우측 4개 아이템들을 담을 컨테이너 (정확히 4열 배치) */
 .summaryGrid > div:not(.scoreRing) {
   display: grid;
@@ -249,6 +247,7 @@ button {
   align-items: center;
   text-align: center;
   gap: 6px;
+  margin-left: 20px;
 }
 
 .summaryItem span {
@@ -261,7 +260,7 @@ button {
   font-size: 18px;
   color: #fff;
   font-weight: 700;
-  white-space: pre-line;
+  white-space: nowrap;
 }
 
 .summaryItem em {
@@ -290,6 +289,7 @@ button {
 .feedbackRow h3 {
   margin: 0 0 8px;
   font-size: 18px;
+  font-weight: 500;
 }
 
 .feedbackRow p {
@@ -298,14 +298,36 @@ button {
   line-height: 1.55;
 }
 
-.feedbackRow button {
-  border: 1px solid rgba(180, 107, 255, 0.34);
-  border-radius: 22px;
-  padding: 10px 14px;
-  background: rgba(150, 63, 255, 0.16);
-  color: #c483ff;
+.feedbackRow > div {
+  display: flex;
+  flex-direction: column;
 }
 
+.feedbackRow button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+
+  width: fit-content;
+  margin-left: auto;
+
+  border: 1px solid rgba(181, 107, 255, 0.051);
+  border-radius: 22px;
+  padding: 8px 12px;
+
+  background: rgba(150, 63, 255, 0.16);
+
+  color: #c383ffa9;
+  font-size: 13px;
+  font-weight: 300;
+}
+
+.feedbackRow button svg {
+  width: 15px;
+  height: 15px;
+  margin-right: -5px;
+}
 /* ==========================================================================
    3. 히스토리 로우 (아이콘 및 텍스트 정렬) 수정
    ========================================================================== */

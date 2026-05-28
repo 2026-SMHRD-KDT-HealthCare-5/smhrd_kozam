@@ -7,8 +7,6 @@ import {
   Waves,
   Moon,
   ChevronRight,
-  Mic,
-  Bell,
   User,
   ShieldCheck,
 } from "lucide-react";
@@ -18,60 +16,31 @@ import sleepingPanda from "@/assets/images/sleepingPanda.png";
 import { getReport, getReportList } from "@/api/history";
 import { useAsync } from "@/hooks/useAsync";
 import { convertMsToTime, formatTime } from "@/utils/common";
-import DateSelectModal from "@/components/common/DateSelectModal";
+import ReportSelectModal from "@/components/SleepingHistory/ReportSelectModal";
 
-const savedDates = [
-  {
-    id: "2026-05-26",
-    label: "2026년 5월 26일",
-    summary: "수면 6시간 12분 · 코골이 12회",
-  },
-  {
-    id: "2026-05-25",
-    label: "2026년 5월 25일",
-    summary: "수면 7시간 04분 · 코골이 8회",
-  },
-  {
-    id: "2026-05-24",
-    label: "2026년 5월 24일",
-    summary: "수면 5시간 48분 · 코골이 15회",
-  },
-  {
-    id: "2026-05-23",
-    label: "2026년 5월 23일",
-    summary: "수면 6시간 31분 · 코골이 10회",
-  },
+const TIMELINE_LEGEND = [
+  { type: "ALARM", label: "알람 발생", class: "white" },
+  { type: "SNORE", label: "코골이 발생", class: "yellow" },
+  { type: "NORMAL", label: "일반 수면", class: "purple" },
 ];
 
-const monitoringRange = {
-  start: "23:58",
-  end: "06:25",
-};
+const formatDateKorean = (dateString) => {
+  if (!dateString) return;
 
-const timelineBars = Array.from({ length: 56 }, (_, index) => ({
-  id: index,
-  alarmTriggered: index === 13 || index === 26 || index === 37,
-  snoreDetected:
-    (index >= 8 && index <= 12) ||
-    (index >= 21 && index <= 25) ||
-    (index >= 33 && index <= 36) ||
-    (index >= 45 && index <= 50),
-}));
+  const [year, month, day] = dateString.split("-");
+
+  return `${year}년 ${Number(month)}월 ${Number(day)}일`;
+};
 
 const SleepingHistory = () => {
   const { reportId: initialReportId } = useParams();
-  const [selectedDate, setSelectedDate] = useState(savedDates[0]);
-  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
 
-  const handleSelectDate = (date) => {
-    setSelectedDate(date);
-    setIsDateModalOpen(false);
-  };
   const { execute: getReportAsync } = useAsync(getReport);
   const { execute: getReportListAsync } = useAsync(getReportList);
 
   const [currentReportId, setCurrentReportId] = useState(initialReportId);
   const [reportData, setReportData] = useState(null);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const reportListRef = useRef([]);
 
@@ -87,6 +56,12 @@ const SleepingHistory = () => {
     },
     [getReportAsync],
   );
+
+  const handleSelectReport = (reportId) => {
+    if (!reportId) return;
+    setCurrentReportId(reportId);
+    setIsReportModalOpen(false);
+  };
 
   useEffect(() => {
     fetchReport(currentReportId);
@@ -110,30 +85,30 @@ const SleepingHistory = () => {
       <section className={styles.contentStack}>
         <button
           className={styles.dateCard}
-          onClick={() => setIsDateModalOpen(true)}
+          onClick={() => setIsReportModalOpen(true)}
         >
           <span>날짜</span>
-          <strong>{selectedDate.label}</strong>
-          {/* <strong>{reportData?.startDate}</strong> */}
+          {/* <strong>{selectedDate.label}</strong> */}
+          <strong>{formatDateKorean(reportData?.startDate)}</strong>
           <ChevronDown />
           <em>
             <CalendarDays />
             날짜 선택
           </em>
         </button>
-        <Timeline graph={reportData?.graph} />
+        <Timeline graphData={reportData?.graph} />
         <Summary summaryData={reportData?.summary} />
         <Feedback feedbackData={reportData?.feedback} />
         <ProfileRows profileData={reportData?.profile} />
       </section>
-
-      <DateSelectModal
-        open={isDateModalOpen}
-        dates={savedDates}
-        selectedDateId={selectedDate.id}
-        onSelect={handleSelectDate}
-        onClose={() => setIsDateModalOpen(false)}
+      <ReportSelectModal
+        open={isReportModalOpen}
+        reportList={reportListRef.current}
+        selectedReportId={currentReportId}
+        onSelect={handleSelectReport}
+        onClose={() => setIsReportModalOpen(false)}
       />
+      ReportSelectModal
     </main>
   );
 };
@@ -153,24 +128,48 @@ const Card = ({ title, icon, children }) => {
 const Timeline = ({ graphData }) => {
   if (!graphData) return;
 
-  const {
-    startTime: sleepStartTime,
-    endTime: sleepEndTime,
-    snoreList,
-    alarmStamps,
-  } = graphData;
+  const buildTimelineBars = (graph, totalBars = 50) => {
+    const start = new Date(graph.startTime).getTime();
+    const end = new Date(graph.endTime).getTime();
+    const duration = end - start;
+    const barDuration = duration / totalBars;
+
+    return Array.from({ length: totalBars }, (_, index) => {
+      const barStart = start + index * barDuration;
+      const barEnd = barStart + barDuration;
+
+      const snoreDetected = graph.snoreList.some((snore) => {
+        const snoreStart = new Date(snore.startTime).getTime();
+        const snoreEnd = new Date(snore.endTime).getTime();
+        return snoreStart < barEnd && snoreEnd > barStart; // 겹침 여부
+      });
+
+      const alarmTriggered = graph.alarmStamps.some((stamp) => {
+        const alarmTime = new Date(stamp).getTime();
+        return alarmTime >= barStart && alarmTime < barEnd;
+      });
+
+      return { id: index, alarmTriggered, snoreDetected };
+    });
+  };
+
+  const timelineBars = buildTimelineBars(graphData);
+  const { hour: startHour, minute: startMinute } = formatTime(
+    graphData.startTime,
+  );
+  const { hour: endHour, minute: endMinute } = formatTime(graphData.endTime);
 
   return (
     <Card title="수면/코골이 타임라인" icon={<Waves />}>
       <div className={styles.legend}>
-        <span>
-          <i className={styles.yellow} />
-          코골이 감지
-        </span>
-        <span>
-          <i className={styles.alarm} />
-          알람 발생
-        </span>
+        {TIMELINE_LEGEND.map((legend) => {
+          return (
+            <span key={legend.type}>
+              <i className={styles[legend.class]} />
+              {legend.label}
+            </span>
+          );
+        })}
       </div>
       <div className={styles.timelineBars}>
         {timelineBars.map((bar) => {
@@ -189,10 +188,10 @@ const Timeline = ({ graphData }) => {
         })}
       </div>
       <div className={styles.sleepRange}>
-        <span>{monitoringRange.start}</span>
+        <span>{`${startHour}:${startMinute}`}</span>
 
         <div />
-        <span>{monitoringRange.end}</span>
+        <span>{`${endHour}:${endMinute}`}</span>
       </div>
     </Card>
   );
@@ -201,18 +200,11 @@ const Timeline = ({ graphData }) => {
 const Summary = ({ summaryData }) => {
   if (!summaryData) return;
 
-  const { score, sleepDuration, startTime, endTime, snoreCount, alarmsCount } =
-    summaryData;
+  const { score, sleepDuration, snoreCount, alarmsCount } = summaryData;
   const { hour: durationHour, minute: durationMinute } =
     convertMsToTime(sleepDuration);
-  const { hour: startHour, minute: startMinute } = formatTime(startTime);
-  const { hour: endHour, minute: endMinute } = formatTime(endTime);
   const items = [
-    [
-      "총 수면 시간",
-      `${durationHour}시간\n${durationMinute}분`,
-      `${startHour}:${startMinute} ~ ${endHour}:${endMinute}`,
-    ],
+    ["총 수면 시간", `${durationHour}시간 ${durationMinute}분`],
     ["코골이 감지", `${snoreCount}회`],
     ["알람 발생", `${alarmsCount}회`],
   ];
@@ -224,7 +216,6 @@ const Summary = ({ summaryData }) => {
         <div className={styles.scoreRing}>
           <strong>{score}</strong>
           <span>점</span>
-          <small>수면 점수</small>
         </div>
 
         {/* 2. 오른쪽 4개 정보 그리드 (div로 한 번 감싸줍니다) */}
@@ -269,26 +260,31 @@ const ProfileRows = ({ profileData }) => {
 
   const { height, weight, sleepingPosture, alarmCondition } = profileData;
 
+  const alarmConditionMap = {
+    1: "지속시간 기반",
+    2: "반복패턴 기반",
+    3: "알람 받지 않음",
+  };
+
   const rows = [
-    [Mic, "코골이 감지", "총 감지 횟수", "12회", "보통"],
-    [Bell, "알람 발생", "총 알람 횟수", "3회", "보통"],
     [
       User,
-      "사용자 프로필",
-      "등록된 사용자 정보",
-      "김코잠",
-      "1988.05.20 / 남성",
+      "사용자 신체 정보",
+      "평소수면자세",
+      `${height}cm / ${weight}kg`,
+      sleepingPosture,
     ],
+
     [
       ShieldCheck,
       "당시 알람 발생 조건",
-      "알람이 발생한 주요 요인",
-      "소음 50 dB 이상",
-      "자세 변화 · 코골이 감지",
+      "설정된 알람 방식",
+      // "모니터링 설정 기준",
+      alarmConditionMap[String(alarmCondition)] ?? "-",
     ],
   ];
   return rows.map(([Icon, title, sub, value, note]) => (
-    <button className={styles.historyRow} key={title}>
+    <div className={styles.historyRow} key={title}>
       <Icon />
       <span>
         <strong>{title}</strong>
@@ -298,8 +294,7 @@ const ProfileRows = ({ profileData }) => {
         {value}
         <small>{note}</small>
       </em>
-      <ChevronRight />
-    </button>
+    </div>
   ));
 };
 
