@@ -1,42 +1,42 @@
 import apiClient from "@/utils/client";
 
 export const getReportList = async (payload) => {
-  // const response = await apiClient.get("/history");
-  // return response.data;
-  return {
-    success: true,
-    data: {
-      lastReportId: 2,
-      reports: [
-        {
-          reportId: 2,
-          startDate: "2026-05-27",
-          sleepDuration: 28800000,
-          snoreCount: 12,
-          alarmsCount: 2,
-          score: 62,
-        },
-        {
-          reportId: 1,
-          startDate: "2026-05-26",
-          sleepDuration: 28800000,
-          snoreCount: 11,
-          alarmsCount: 1,
-          score: 61,
-        },
-      ],
-    },
-    message: "fake",
-  };
+  const response = await apiClient.get("/history/reports");
+  return response.data;
+  // return {
+  //   success: true,
+  //   data: {
+  //     lastReportId: 2,
+  //     reports: [
+  //       {
+  //         reportId: 2,
+  //         startDate: "2026-05-27",
+  //         sleepDuration: 28800000,
+  //         snoreCount: 12,
+  //         alarmsCount: 2,
+  //         score: 62,
+  //       },
+  //       {
+  //         reportId: 1,
+  //         startDate: "2026-05-26",
+  //         sleepDuration: 28800000,
+  //         snoreCount: 11,
+  //         alarmsCount: 1,
+  //         score: 61,
+  //       },
+  //     ],
+  //   },
+  //   message: "fake",
+  // };
 };
 
 export const getReport = async (reportId, payload) => {
-  // const response = await apiClient.get(`/history/reports/${reportId}`);
-  // return response.data;
-  return {
-    success: true,
-    data: reportDataList[reportId],
-  };
+  const response = await apiClient.get(`/history/reports/${reportId}`);
+  return response.data;
+  // return {
+  //   success: true,
+  //   data: reportDataList[reportId],
+  // };
 };
 
 const reportDataList = {
