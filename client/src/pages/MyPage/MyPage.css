@@ -148,8 +148,9 @@
 .mini-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  width: 270px;
   gap: 0px;
-  padding: 10px 20px;
+  padding: 10px 18px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.015);
@@ -186,22 +187,32 @@
   font-weight: 300;
 }
 
+/* 프로필 정보 수정박스 */
 .profile-input div {
   display: flex;
   align-items: center;
   gap: 13px;
   min-height: 48px;
   padding: 0 16px;
-  border: 1px solid rgba(221, 209, 255, 0.38);
+  border: 1px solid rgba(221, 209, 255, 0.178);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.035);
 }
 
+/* 프로필 정보 박스 아이콘 */
 .profile-input svg {
   color: #a565ff;
   flex: 0 0 auto;
 }
 
+/* 프로필 정보 박스 내 폰트 설정 */
+.profile-input span {
+  color: whitesmoke;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+/* 프로필 cm, kg 폰트 설정 */
 .profile-input {
   width: 100%;
   border: 0;
@@ -210,16 +221,11 @@
   background: transparent;
 }
 
-.profile-input span {
-  color: whitesmoke;
-  font-size: 14px;
-  font-weight: 400;
-}
-
-.muted {
+/* .muted {
   color: #8f879e;
-}
+} */
 
+/* 키 몸무게 배열설정 */
 .two-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;

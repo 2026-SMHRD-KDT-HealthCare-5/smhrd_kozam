@@ -39,8 +39,6 @@ const SnoreMonitoring = () => {
   return (
     <main className={styles.screen}>
       <section className={styles.monitorShell}>
-        <StatusPill text={currentStatus.text} active={isRunning} />
-
         <div className={styles.cooldownWrapper}>
           <AnimatePresence>
             {isCooldown && (
@@ -57,6 +55,8 @@ const SnoreMonitoring = () => {
         </div>
 
         <div className={styles.orb} onClick={handleToggleCooldown}>
+          <StatusPill text={currentStatus.text} active={isRunning} />
+
           <AnimatePresence mode="wait">
             <motion.div
               key={monitoringStatus}

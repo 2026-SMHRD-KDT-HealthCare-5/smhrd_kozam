@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "MyFontGothic";
+  src: url("@/assets/fonts/PyeojinGothic-Semibold.woff2") format("woff2");
+  /* font-weight: 400; */
+  font-style: normal;
+  font-display: swap;
+}
+
 .screen {
   position: relative;
   width: 100%;
@@ -12,4 +20,514 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+}
+
+/* 전역 태그 및 공통 스타일 */
+button {
+  color: inherit;
+  cursor: pointer;
+}
+
+.contentStack {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+}
+
+/* ==========================================================================
+   1. 날짜 카드 정렬 수정
+   ========================================================================== */
+.dateCard {
+  border: 1px solid rgba(211, 195, 255, 0.05);
+  background: linear-gradient(
+    135deg,
+    rgba(28, 24, 62, 0.92),
+    rgba(9, 9, 38, 0.94)
+  );
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 18px;
+  border-radius: 17px;
+  text-align: left;
+  width: 100%;
+}
+
+/* 왼쪽 날짜 텍스트 묶음 */
+.dateCard span,
+.dateCard strong {
+  display: block;
+}
+
+.dateCard span {
+  color: #ac7edfce;
+  font-weight: 500;
+  font-size: 14px;
+  /* margin-bottom: 4px; */
+}
+
+.dateCard strong {
+  margin-left: -70px;
+  font-size: 16px;
+  font-weight: 400;
+  color: #fff;
+}
+
+/* 우측 날짜 선택 버튼 모음 */
+.dateCard em {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.065);
+  color: #e4dff0;
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 2. Card 컴포넌트 관련 */
+.card {
+  border: 1px solid rgba(211, 195, 255, 0.14);
+  background: linear-gradient(
+    135deg,
+    rgba(28, 24, 62, 0.92),
+    rgba(9, 9, 38, 0.94)
+  );
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.04);
+  position: relative;
+  padding: 12px 18px;
+  border-radius: 17px;
+}
+
+.card h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 0px;
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.card h2 svg {
+  color: #a55cffbe;
+  /* transform: scale(1); */
+  width: 20px;
+  height: 20px;
+}
+
+/* 3. Timeline 컴포넌트 관련 */
+.legend {
+  position: absolute;
+  top: 22px;
+  right: 18px;
+  display: flex;
+  gap: 14px;
+  color: #bdb5ca;
+  font-size: 12px;
+}
+
+.legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.legend .white {
+  background: #faf7ff;
+}
+
+.legend .yellow {
+  background: #ffe762;
+}
+
+.timelineBars {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 5px;
+  min-height: 82px;
+  margin-top: 10px;
+}
+
+.timelineBars span {
+  position: relative;
+  flex: 1;
+  min-width: 3px;
+  height: 30px;
+  border-radius: 99px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.62),
+    currentColor 34%,
+    currentColor 78%,
+    rgba(0, 0, 0, 0.18)
+  );
+}
+
+.timelineBars span[data-time]:hover::before {
+  content: attr(data-time);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  z-index: 3;
+  transform: translateX(-50%);
+  padding: 6px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(10, 8, 32, 0.94);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32);
+}
+
+.timelineBars span[data-time]:hover::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 5px);
+  z-index: 3;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(10, 8, 32, 0.94);
+}
+
+.purple {
+  color: #a45cff;
+}
+
+/* timelineBars 전용 노란색 처리 */
+.timelineBars .yellow {
+  color: #f8fd77;
+}
+
+.timelineBars .alarm {
+  height: 42px;
+  color: #f0f1dd;
+}
+
+/* timelineBars 시간 폰트 설정 */
+.sleepRange {
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+  color: #aaa2b8;
+  font-size: 13px;
+}
+
+.sleepRange div {
+  flex: 1;
+  height: 14px;
+  background: linear-gradient(90deg, #ad55ff00, #7435d300);
+}
+
+/* ==========================================================================
+   2. 한눈에 보는 수면 요약 그리드 전면 수정
+   ========================================================================== */
+.summaryGrid {
+  display: flex; /* grid 대신 flex로 크게 두 덩어리(차트 / 아이템들) 분리 */
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+
+.scoreRing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-left: 10px;
+  margin-top: 15px;
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, #111126 0 55%, #0b0a1f 56% 100%);
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.34),
+    0 0 34px rgba(151, 71, 255, 0.28),
+    inset 0 0 20px rgba(8, 6, 28, 0.86);
+  position: relative;
+}
+
+.scoreRing svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-84deg);
+  pointer-events: none;
+}
+
+.scoreTrack,
+.scoreArc {
+  fill: none;
+  stroke-width: 8;
+}
+
+.scoreTrack {
+  stroke: rgba(70, 45, 118, 0.34);
+}
+
+.scoreArc {
+  stroke: url("#scoreArcGradient");
+  stroke-linecap: round;
+  filter:
+    drop-shadow(0 0 4px rgba(248, 253, 119, 0.7))
+    drop-shadow(0 0 12px rgba(238, 255, 126, 0.36));
+  transition: stroke-dashoffset 0.35s ease;
+}
+
+.scoreRing strong {
+  position: relative;
+  z-index: 1;
+  font-family: "MyFontGothic";
+  font-size: 30px;
+  font-weight: 400;
+  color: #fff;
+  line-height: 1;
+}
+
+.scoreRing span {
+  position: relative;
+  z-index: 1;
+  font-family: "MyFontGothic";
+  font-size: 13px;
+  font-weight: 200;
+  color: #ffffffbe;
+  margin-top: 2px;
+}
+
+/* 우측 요약 아이템들을 담을 컨테이너 */
+.summaryGrid > div:not(.scoreRing) {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 0;
+  flex-grow: 1;
+}
+
+/* 각각의 요약 카드 스타일 */
+.summaryItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+}
+
+.summaryItem:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  right: 0;
+  width: 1px;
+  height: calc(100% - 16px);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.summaryItem span {
+  color: #b6adc7;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.summaryItem strong {
+  font-size: 16px;
+  color: #fff;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.summaryItem em {
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(255, 215, 75, 0.1);
+  color: #ffe35e;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* 5. Feedback 컴포넌트 관련 */
+.feedbackRow {
+  display: grid;
+  grid-template-columns: 42% 1fr;
+  gap: 14px;
+  align-items: center;
+}
+
+.feedbackRow img {
+  width: 100%;
+  border-radius: 14px;
+  margin-left: -15px;
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    black 52%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(ellipse at center, black 52%, transparent 100%);
+}
+
+.feedbackRow h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.feedbackRow p {
+  margin: 0 0 12px;
+  color: #c8c0d4b5;
+  line-height: 1.55;
+  font-size: 13px;
+}
+
+.feedbackRow > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.feedbackRow button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+
+  width: fit-content;
+  margin-left: auto;
+
+  border: 1px solid rgba(212, 188, 236, 0.051);
+  border-radius: 22px;
+  padding: 6px 12px;
+
+  background: rgba(150, 63, 255, 0.16);
+
+  color: #c383ffb8;
+  font-size: 13px;
+  font-weight: 300;
+}
+
+.feedbackRow button svg {
+  width: 15px;
+  height: 15px;
+  margin-right: -5px;
+}
+
+/* ==========================================================================
+   3. 히스토리 로우 (아이콘 및 텍스트 정렬) 수정
+   ========================================================================== */
+.historyRow {
+  border: 1px solid rgba(211, 195, 255, 0.14);
+  background: linear-gradient(
+    135deg,
+    rgba(28, 24, 62, 0.92),
+    rgba(9, 9, 38, 0.94)
+  );
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.04);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  min-height: 76px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  text-align: left;
+}
+
+/* 왼쪽 아이콘 + 타이틀 묶음 구역 */
+.historyRow > svg:first-child {
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #9742ed, #4b249a);
+  flex-shrink: 0;
+  margin-right: 14px;
+  color: white;
+}
+
+.historyRow span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-grow: 1;
+}
+
+.historyRow span strong {
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.historyRow span small {
+  color: #b6adc7;
+  font-size: 13px;
+}
+
+/* 우측 데이터 결과 구역 */
+.historyRow em {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  font-style: normal;
+  font-size: 15px;
+  font-weight: 500;
+  margin-right: 12px;
+  color: white;
+}
+
+.historyRow em small {
+  font-weight: 500;
+}
+
+/* 꺾쇠 아이콘 크기 제어 */
+.historyRow > svg:last-child {
+  width: 18px;
+  height: 18px;
+  color: #6b6680;
+  flex-shrink: 0;
+}
+
+/* 7. 미디어 쿼리 반응형 스타일 */
+@media (max-width: 430px) {
+  .summaryGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .scoreRing {
+    margin: auto;
+    grid-column: 1 / -1;
+  }
+
+  .legend {
+    position: static;
+    margin-bottom: 8px;
+  }
+
+  .feedbackRow {
+    grid-template-columns: 1fr;
+  }
+
+  .dateCard {
+    grid-template-columns: 1fr auto;
+  }
+
+  .dateCard em {
+    grid-column: 1 / -1;
+    justify-content: center;
+  }
 }

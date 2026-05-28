@@ -116,8 +116,8 @@ export function useSnoreMonitoring() {
         confidences.reduce((a, b) => a + b, 0) / confidences.length;
 
       await createSnoreEventAsync(sessionIdRef.current, {
-        startedAt,
-        endedAt: lastDetectedAt,
+        startTime: startedAt,
+        endTime: lastDetectedAt,
         avgConfidence: Number(avgConfidence.toFixed(2)),
       });
     }
@@ -170,8 +170,8 @@ export function useSnoreMonitoring() {
           snoreStreakRef.current = 0;
           if (currentStreakRef.current.startedAt) {
             const gapSeconds =
-              (now.getTime() -
-                currentStreakRef.current.lastDetectedAt.getTime()) /
+              (currentStreakRef.current.lastDetectedAt.getTime() -
+                currentStreakRef.current.startedAt.getTime()) /
               1000;
             if (gapSeconds > SNORE_GAP_LIMIT_SECONDS) {
               await saveSnoreStreak();

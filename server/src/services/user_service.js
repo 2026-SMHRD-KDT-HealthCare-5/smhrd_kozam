@@ -85,7 +85,6 @@ exports.updateUser = async (userId, updateData) => {
   }
 
   // 2. profiles 테이블에 해당하는 필드 추출 (height, weight, sleepingPosture)
-  const profileFields = ["height", "weight", "sleeping_posture"];
   const profileUpdates = [];
   const profileValues = [];
 
