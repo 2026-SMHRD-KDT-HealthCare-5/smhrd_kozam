@@ -168,7 +168,7 @@ const insertSnoreEvent = async (snoreEventData) => {
  * @return {Promise<void>} - 저장 후 별도 반환 없음
  */
 const insertAlarmLog = async (alarmLogData) => {
-  const { userIdx, sessionId, triggeredAt, alarmType, alarmContent } =
+  const { userIdx, sessionIdx, triggeredAt, alarmType, alarmContent } =
     alarmLogData;
 
   const sql = `
@@ -184,7 +184,7 @@ const insertAlarmLog = async (alarmLogData) => {
 
   await db.query(sql, [
     userIdx,
-    sessionId,
+    sessionIdx,
 
     // 클라이언트가 alarmType을 보내지 않으면 기본값 사용
     alarmType || "SNORE",
@@ -281,7 +281,7 @@ const findSnoreEventsBySessionId = async (snoreQueryData) => {
  * @param {Date|string} alarmQueryData.endTime - 수면 종료 시간
  * @return {Promise<Array>} - 알람 로그 목록
  */
-const findAlarmLogsBySessionTime = async (alarmQueryData) => {
+const findAlarmLogsBySessionId = async (alarmQueryData) => {
   const { userIdx, startTime, endTime } = alarmQueryData;
 
   const sql = `
@@ -434,7 +434,7 @@ module.exports = {
   insertAlarmLog,
   updateSessionEndTime,
   findSnoreEventsBySessionId,
-  findAlarmLogsBySessionTime,
+  findAlarmLogsBySessionId,
   findProfileById,
   insertSleepReport,
   finalizeSessionReport,

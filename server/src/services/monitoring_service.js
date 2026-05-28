@@ -1,7 +1,9 @@
 // DB 쿼리를 직접 실행하는 MODEL 파일 불러옴
 // SERVICE는 controller와 model 사이에서 비즈니스 로직 담당
 const monitoringModel = require("../models/monitoring_model");
-
+const LLM_API = process.env.LLM_API_URL;
+const LLM_API_KEY = process.env.LLM_API_KEY;
+const LLM_MODEL = process.env.LLM_MODEL;
 /**
  * 수면 세션 생성 서비스
  *
@@ -12,7 +14,7 @@ const monitoringModel = require("../models/monitoring_model");
  * @param {Object} sessionData - 세션 생성 데이터 객체
  * @param {string} sessionData.startedAt - 수면 시작 시간
  * @param {number} sessionData.userIdx - 사용자 ID
- * @return {Promise<{sessionId: number}>} - 생성된 세션 ID
+ * @return {Promise<{sessionId: number}>} 생성된 세션 ID
  */
 const createSession = async (sessionData) => {
   const settings = await monitoringModel.findSessionSettingsByUserId(
@@ -29,7 +31,6 @@ const createSession = async (sessionData) => {
     alarmCondition: String(settings.alarm_condition || "3"),
   });
 
-  // controller로 반환할 데이터 형태를 정리한다.
   return { sessionId };
 };
 
@@ -47,12 +48,11 @@ const createSession = async (sessionData) => {
  * @param {string} snoreEventData.startTime - 코골이 이벤트 시작 시간
  * @param {string} snoreEventData.endTime - 코골이 이벤트 종료 시간
  * @param {number} snoreEventData.avgConfidence - 코골이 이벤트 평균 신뢰도
- * @return {Promise<void>} - 저장 완료 후 별도 반환 없음
+ * @return {Promise<void>} 저장 완료 후 별도 반환 없음
  */
 const createSnoreEvent = async (snoreEventData) => {
   const { sessionId, userIdx } = snoreEventData;
 
-  // 세션 존재 여부 확인
   const session = await monitoringModel.findSessionById(sessionId, userIdx);
 
   if (!session) {
@@ -63,8 +63,6 @@ const createSnoreEvent = async (snoreEventData) => {
     throw new Error("이미 종료된 세션입니다.");
   }
 
-  // 세션이 존재하면 코골이 이벤트 저장
-  // 중요: 객체를 그대로 model로 전달한다.
   await monitoringModel.insertSnoreEvent(snoreEventData);
 };
 
@@ -73,8 +71,8 @@ const createSnoreEvent = async (snoreEventData) => {
  *
  * 역할:
  * 1. sessionId로 monitoring_sessions에서 세션을 조회한다.
- * 2. 세션의 user_idx를 가져온다.
- * 3. alarm_logs 테이블에는 session_idx가 없으므로 user_idx 기준으로 저장한다.
+ * 2. 세션이 현재 로그인 사용자 소유인지 확인한다.
+ * 3. alarm_logs 테이블에 user_idx와 session_idx를 함께 저장한다.
  *
  * @param {Object} alarmLogData - 알람 로그 데이터 객체
  * @param {number} alarmLogData.sessionId - 알람이 발생한 세션 ID
@@ -82,12 +80,11 @@ const createSnoreEvent = async (snoreEventData) => {
  * @param {string} alarmLogData.triggeredAt - 알람 발생 시간
  * @param {string} [alarmLogData.alarmType] - 알람 타입
  * @param {string} [alarmLogData.alarmContent] - 알람 내용
- * @return {Promise<void>} - 저장 완료 후 별도 반환 없음
+ * @return {Promise<void>} 저장 완료 후 별도 반환 없음
  */
 const createAlarmLog = async (alarmLogData) => {
   const { sessionId, userIdx } = alarmLogData;
 
-  // 세션 존재 여부 확인
   const session = await monitoringModel.findSessionById(sessionId, userIdx);
 
   if (!session) {
@@ -98,53 +95,264 @@ const createAlarmLog = async (alarmLogData) => {
     throw new Error("이미 종료된 세션입니다.");
   }
 
-  // alarm_logs 테이블에는 session_idx가 없으므로
-  // 조회한 세션의 user_idx를 alarmLogData에 추가해서 model로 넘긴다.
   await monitoringModel.insertAlarmLog({
     ...alarmLogData,
     userIdx: session.user_idx,
   });
 };
-/**
- * 수면 점수 임시 계산 함수
- *
- * 실제 LLM API가 score를 내려주기 전까지 사용할 임시 계산식이다.
- * 나중에 LLM 응답에서 score를 받으면 이 함수는 제거하거나 보조용으로만 사용하면 된다.
- *
- * 계산 기준:
- * 1. 기본 점수 100점
- * 2. 코골이 1회당 2점 감점
- * 3. 알람 1회당 5점 감점
- * 4. 10점 단위로 반올림
- * 5. 최소 0점, 최대 100점 제한
- *
- * @param {number} snoreCount - 코골이 이벤트 개수
- * @param {number} alarmsCount - 알람 발생 개수
- * @return {number} 수면 점수
- */
-const calculateSleepScore = (snoreCount, alarmsCount) => {
-  const rawScore = 100 - snoreCount * 2 - alarmsCount * 5;
-  const roundedScore = Math.round(rawScore / 10) * 10;
 
-  return Math.max(0, Math.min(100, roundedScore));
+/**
+ * 날짜 값을 ISO 문자열로 변환한다.
+ *
+ * @param {Date|string|null} value - 날짜 값
+ * @return {string|null} ISO 문자열 또는 null
+ */
+const toISOStringOrNull = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date.toISOString();
 };
 
 /**
+ * 수면 시간 분 단위 계산 함수
+ *
+ * 주의:
+ * 이 함수는 점수를 직접 계산하기 위한 함수가 아니다.
+ * LLM에게 전달할 수면 분석 입력값을 만들기 위한 전처리 함수다.
+ *
+ * @param {Date|string} startTime - 수면 시작 시간
+ * @param {Date|string} endTime - 수면 종료 시간
+ * @return {number} 수면 시간, 분 단위
+ */
+const calculateSleepDurationMinutes = (startTime, endTime) => {
+  const startTimeMs = new Date(startTime).getTime();
+  const endTimeMs = new Date(endTime).getTime();
+
+  if (Number.isNaN(startTimeMs) || Number.isNaN(endTimeMs)) {
+    return 0;
+  }
+
+  const durationMs = endTimeMs - startTimeMs;
+
+  if (durationMs <= 0) {
+    return 0;
+  }
+
+  return Math.round(durationMs / 1000 / 60);
+};
+
+/**
+ * 코골이 총 지속 시간 초 단위 계산 함수
+ *
+ * 주의:
+ * 이 함수도 점수 계산용이 아니라 LLM 입력값 생성용이다.
+ *
+ * @param {Array} snoreEvents - 코골이 이벤트 목록
+ * @return {number} 코골이 총 지속 시간, 초 단위
+ */
+const calculateTotalSnoreDurationSeconds = (snoreEvents = []) => {
+  return snoreEvents.reduce((totalSeconds, event) => {
+    const startTimeMs = new Date(event.start_time).getTime();
+    const endTimeMs = new Date(event.end_time).getTime();
+
+    if (Number.isNaN(startTimeMs) || Number.isNaN(endTimeMs)) {
+      return totalSeconds;
+    }
+
+    const durationSeconds = Math.max(
+      0,
+      Math.round((endTimeMs - startTimeMs) / 1000),
+    );
+
+    return totalSeconds + durationSeconds;
+  }, 0);
+};
+
+/**
+ * LLM 피드백 생성을 위한 입력 데이터를 만든다.
+ *
+ * @param {Object} analysisData - 수면 분석 원본 데이터
+ * @param {Object} analysisData.session - 세션 정보
+ * @param {Array} analysisData.snoreEvents - 코골이 이벤트 목록
+ * @param {Array} analysisData.alarmLogs - 알람 로그 목록
+ * @param {Object|null} analysisData.profile - 사용자 프로필 정보
+ * @return {Object} LLM 입력 데이터
+ */
+const buildSleepFeedbackPayload = (analysisData) => {
+  const { session, snoreEvents, alarmLogs, profile } = analysisData;
+
+  const sleepDurationMinutes = calculateSleepDurationMinutes(
+    session.start_time,
+    session.end_time,
+  );
+
+  const totalSnoreDurationSeconds =
+    calculateTotalSnoreDurationSeconds(snoreEvents);
+
+  return {
+    session: {
+      sessionId: session.idx,
+      startTime: toISOStringOrNull(session.start_time),
+      endTime: toISOStringOrNull(session.end_time),
+      sleepDurationMinutes,
+      alarmCondition: session.alarm_condition,
+    },
+
+    snoring: {
+      count: snoreEvents.length,
+      totalDurationSeconds: totalSnoreDurationSeconds,
+      events: snoreEvents.map((event) => {
+        return {
+          startTime: toISOStringOrNull(event.start_time),
+          endTime: toISOStringOrNull(event.end_time),
+          avgConfidence:
+            event.avg_confidence === null ? null : Number(event.avg_confidence),
+        };
+      }),
+    },
+
+    alarms: {
+      count: alarmLogs.length,
+      events: alarmLogs.map((alarm) => {
+        return {
+          triggeredAt: toISOStringOrNull(alarm.created_at),
+          alarmType: alarm.alarm_type,
+          alarmContent: alarm.alarm_content,
+        };
+      }),
+    },
+
+    profile: {
+      height:
+        profile && profile.height !== null ? Number(profile.height) : null,
+      weight:
+        profile && profile.weight !== null ? Number(profile.weight) : null,
+      sleepingPosture: profile ? profile.sleeping_posture : null,
+    },
+  };
+};
+
+/**
+ * LLM API에 수면 피드백 생성을 요청한다.
+ *
+ * @param {Object} payload - LLM 입력 데이터
+ * @return {Promise<Object>} LLM 피드백 응답 객체
+ */
+const requestSleepFeedbackFromLLM = async (payload) => {
+  if (!LLM_API_URL || !LLM_API_KEY) {
+    throw new Error("LLM API 설정이 없습니다.");
+  }
+
+  const systemPrompt = `
+너는 수면 모니터링 앱의 피드백 생성 AI다.
+사용자의 수면 세션 데이터, 코골이 이벤트, 알람 로그, 프로필 정보를 바탕으로 수면 피드백을 생성한다.
+
+반드시 아래 JSON 형식으로만 응답해야 한다.
+마크다운, 설명문, 코드블록은 절대 포함하지 마라.
+
+{
+  "title": "짧은 제목",
+  "content": "사용자가 바로 이해할 수 있는 한두 문장 요약",
+  "detail": "수면 상태에 대한 구체적인 분석과 실천 가능한 조언",
+  "score": 0
+}
+
+score는 0부터 100 사이의 정수다.
+의학적 진단처럼 단정하지 말고, 앱에서 측정된 데이터 기반의 생활 습관 피드백 수준으로 작성한다.
+`.trim();
+
+  const userPrompt = `
+다음 수면 데이터를 분석해서 수면 피드백 JSON을 생성해줘.
+
+데이터:
+${JSON.stringify(payload, null, 2)}
+`.trim();
+
+  const response = await fetch(LLM_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${LLM_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: LLM_MODEL,
+      messages: [
+        {
+          role: "system",
+          content: systemPrompt,
+        },
+        {
+          role: "user",
+          content: userPrompt,
+        },
+      ],
+      temperature: 0.3,
+      response_format: {
+        type: "json_object",
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("LLM API 오류:", errorText);
+
+    throw new Error("LLM 피드백 생성에 실패했습니다.");
+  }
+
+  const result = await response.json();
+
+  const content = result.choices?.[0]?.message?.content;
+
+  if (!content) {
+    throw new Error("LLM 피드백 응답이 비어 있습니다.");
+  }
+
+  return JSON.parse(content);
+};
+
+/**
+ * LLM 응답을 sleep_reports.feedback에 저장 가능한 형태로 정리한다.
+ *
+ * @param {Object} feedback - LLM 응답 객체
+ * @return {Object} 정규화된 피드백 객체
+ */
+const normalizeLLMFeedback = (feedback) => {
+  const score = Number(feedback.score);
+
+  return {
+    title:
+      typeof feedback.title === "string" && feedback.title.trim()
+        ? feedback.title.trim()
+        : "수면 리포트",
+
+    content:
+      typeof feedback.content === "string" && feedback.content.trim()
+        ? feedback.content.trim()
+        : "수면 데이터 분석 결과를 확인해보세요.",
+
+    detail:
+      typeof feedback.detail === "string" && feedback.detail.trim()
+        ? feedback.detail.trim()
+        : "수면 중 코골이와 알람 발생 기록을 바탕으로 생성된 피드백입니다.",
+
+    score: Number.isNaN(score)
+      ? 0
+      : Math.max(0, Math.min(100, Math.round(score))),
+  };
+};
+/**
  * 수면 피드백 생성 함수
  *
- * 명세상 이 부분에서 LLM API를 호출해야 한다.
- * 현재는 실제 LLM API 정보가 없으므로,
- * LLM 응답 형태와 동일한 임시 피드백 객체를 생성한다.
- *
- * 나중에 실제 LLM API를 붙일 때는 이 함수 내부만 교체하면 된다.
- *
- * 최종 저장 형태:
- * {
- *   "title": "...",
- *   "content": "...",
- *   "detail": "...",
- *   "score": 80
- * }
+ * 실제 LLM API를 호출해서 피드백을 생성한다.
  *
  * @param {Object} analysisData - 수면 분석에 필요한 데이터
  * @param {Object} analysisData.session - 세션 정보
@@ -154,37 +362,11 @@ const calculateSleepScore = (snoreCount, alarmsCount) => {
  * @return {Promise<Object>} 피드백 객체
  */
 const generateSleepFeedback = async (analysisData) => {
-  const snoreCount = analysisData.snoreEvents.length;
-  const alarmsCount = analysisData.alarmLogs.length;
-  const score = calculateSleepScore(snoreCount, alarmsCount);
+  const payload = buildSleepFeedbackPayload(analysisData);
 
-  if (score >= 80) {
-    return {
-      title: "안정적인 수면이었어요.",
-      content: "코골이와 알람 발생이 적은 편이에요.",
-      detail:
-        "수면 중 방해 요소가 비교적 적었습니다. 현재 수면 습관을 유지하면서 일정한 취침 시간을 지키는 것이 좋습니다.",
-      score,
-    };
-  }
+  const llmFeedback = await requestSleepFeedbackFromLLM(payload);
 
-  if (score >= 50) {
-    return {
-      title: "중간 정도의 수면이었어요.",
-      content: "코골이 또는 알람 발생이 일부 있었어요.",
-      detail:
-        "수면 중 코골이 이벤트와 알람 발생이 확인되었습니다. 옆으로 누워 자기, 음주 피하기, 취침 전 과식 줄이기 같은 습관 개선이 도움이 될 수 있습니다.",
-      score,
-    };
-  }
-
-  return {
-    title: "방해가 많은 수면이었어요.",
-    content: "코골이와 알람 발생이 많은 편이에요.",
-    detail:
-      "수면 중 반복적인 코골이와 알람 발생이 확인되었습니다. 수면 자세, 베개 높이, 코막힘 여부를 점검하고 반복될 경우 전문 상담을 고려하는 것이 좋습니다.",
-    score,
-  };
+  return normalizeLLMFeedback(llmFeedback);
 };
 
 /**
@@ -195,37 +377,33 @@ const generateSleepFeedback = async (analysisData) => {
  * 2. 세션이 없으면 에러를 발생시킨다.
  * 3. 이미 종료된 세션이면 에러를 발생시킨다.
  * 4. endedAt이 start_time보다 빠른지 검증한다.
- * 5. monitoring_sessions.end_time 값을 업데이트한다.
- * 6. 코골이 이벤트 목록을 조회한다.
- * 7. 알람 로그 목록을 조회한다.
- *    - alarm_logs에는 session_idx가 없으므로 user_idx + 시간 범위로 조회한다.
- * 8. profile 정보를 조회한다.
- * 9. LLM 응답 형태의 feedback 객체를 생성한다.
- * 10. sleep_reports.feedback 컬럼에 JSON 문자열로 저장한다.
+ * 5. 코골이 이벤트 목록을 조회한다.
+ * 6. 알람 로그 목록을 조회한다.
+ * 7. profile 정보를 조회한다.
+ * 8. LLM 응답 형태의 feedback 객체를 생성한다.
+ * 9. sleep_reports.feedback 컬럼에 JSON 문자열로 저장한다.
+ * 10. monitoring_sessions.end_time 업데이트와 sleep_reports 생성을 트랜잭션으로 처리한다.
  * 11. 생성된 reportId를 반환한다.
  *
  * @param {Object} sessionEndData - 세션 종료 데이터 객체
  * @param {number} sessionEndData.sessionId - 종료할 세션 ID
  * @param {number} sessionEndData.userIdx - 인증된 사용자 ID
  * @param {string} sessionEndData.endedAt - 수면 종료 시간
- * @return {Promise<{reportId: number}>} - 생성된 리포트 ID
+ * @return {Promise<{reportId: number}>} 생성된 리포트 ID
  */
 const endSession = async (sessionEndData) => {
   const { sessionId, userIdx, endedAt } = sessionEndData;
 
-  // 1. 세션 존재 여부 확인
   const session = await monitoringModel.findSessionById(sessionId, userIdx);
 
   if (!session) {
     throw new Error("세션을 찾을 수 없습니다.");
   }
 
-  // 2. 이미 종료된 세션인지 확인
   if (session.end_time) {
     throw new Error("이미 종료된 세션입니다.");
   }
 
-  // 3. 종료 시간이 시작 시간보다 빠른지 확인
   const startTimeMs = new Date(session.start_time).getTime();
   const endTimeMs = new Date(endedAt).getTime();
 
@@ -233,24 +411,16 @@ const endSession = async (sessionEndData) => {
     throw new Error("종료 시간은 시작 시간보다 빠를 수 없습니다.");
   }
 
-  // 4. 해당 세션의 코골이 이벤트 목록 조회
   const snoreEvents = await monitoringModel.findSnoreEventsBySessionId({
     sessionId,
   });
 
-  // 5. 해당 수면 시간 범위 안에 발생한 알람 로그 조회
-  // alarm_logs에는 session_idx가 없으므로 user_idx와 시간 범위로 조회한다.
-  const alarmLogs = await monitoringModel.findAlarmLogsBySessionTime({
-    userIdx: session.user_idx,
-    startTime: session.start_time,
-    endTime: endedAt,
+  const alarmLogs = await monitoringModel.findAlarmLogsBySessionId({
+    sessionId,
   });
 
-  // 6. 세션에 연결된 프로필 정보 조회
   const profile = await monitoringModel.findProfileById(session.profile_idx);
 
-  // 7. LLM 응답 형태의 피드백 생성
-  // 현재는 임시 함수이고, 추후 실제 LLM API 호출로 교체하면 된다.
   const feedback = await generateSleepFeedback({
     session: {
       ...session,
@@ -261,10 +431,8 @@ const endSession = async (sessionEndData) => {
     profile,
   });
 
-  // 8. sleep_reports.feedback 컬럼에 JSON 문자열로 저장
   const feedbackJson = JSON.stringify(feedback);
 
-  // 9. 종료 처리와 리포트 생성은 하나의 트랜잭션에서 반영
   const reportId = await monitoringModel.finalizeSessionReport(
     { sessionId, userIdx, endedAt },
     {
@@ -277,7 +445,6 @@ const endSession = async (sessionEndData) => {
     },
   );
 
-  // 10. controller로 reportId 반환
   return {
     reportId,
   };
