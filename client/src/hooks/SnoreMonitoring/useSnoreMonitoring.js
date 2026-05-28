@@ -8,7 +8,7 @@ import {
   checkMicPermission,
   requestMicPermission,
 } from "@/utils/micPermission";
-import { decodeAudio, audioBufferToWav } from "@/utils/audioConverter";
+import { float32ArrayToWav } from "@/utils/audioConverter";
 import { MONITORING_STATUS } from "@/constants/monitoring.js";
 import {
   createAlarmLog,
@@ -47,14 +47,17 @@ export function useSnoreMonitoring() {
   // --- Refs ---
   const sessionIdRef = useRef(null);
   const reportIdRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const recordingIntervalRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const streamRef = useRef(null);
+  const workletNodeRef = useRef(null);
+  const pcmBufferRef = useRef([]);
   const cooldownTimerRef = useRef(null);
 
   const snoreStreakRef = useRef(0);
   const lastAlarmTimeRef = useRef(0);
   const patternValidSince = useRef(new Date());
   const alarmActiveRef = useRef(user?.alarmCondition !== "3");
+  const isProcessingAudioRef = useRef(false);
 
   const currentStreakRef = useRef({
     startedAt: null,
@@ -130,12 +133,12 @@ export function useSnoreMonitoring() {
    * AI 분석을 위해 오디오 데이터 전송 및 결과 처리
    */
   const sendAudio = useCallback(
-    async (chunks) => {
-      if (!chunks?.length) return;
+    async (samples, sampleRate) => {
+      if (!samples?.length) return;
+      if (isProcessingAudioRef.current) return;
+      isProcessingAudioRef.current = true;
       try {
-        const webmBlob = new Blob(chunks, { type: "audio/webm" });
-        const audioBuffer = await decodeAudio(webmBlob);
-        const wavBlob = audioBufferToWav(audioBuffer);
+        const wavBlob = float32ArrayToWav(samples, sampleRate);
 
         const formData = new FormData();
         formData.append("audio", wavBlob, "recording.wav");
@@ -177,6 +180,8 @@ export function useSnoreMonitoring() {
         }
       } catch (err) {
         console.error("오디오 분석 중 오류 발생:", err);
+      } finally {
+        isProcessingAudioRef.current = false;
       }
     },
     [predictSnoreAsync, saveSnoreStreak],
@@ -186,45 +191,78 @@ export function useSnoreMonitoring() {
    * 미디어 레코더 중지 및 스트림 릴리즈
    */
   const stopRecording = useCallback(() => {
-    if (recordingIntervalRef.current) {
-      clearInterval(recordingIntervalRef.current);
-      recordingIntervalRef.current = null;
+    if (workletNodeRef.current) {
+      workletNodeRef.current.port.onmessage = null;
+      workletNodeRef.current.disconnect();
+      workletNodeRef.current = null;
     }
-
-    const recorder = mediaRecorderRef.current;
-    if (recorder && recorder.state !== "inactive") {
-      recorder.stop();
-      if (recorder.stream) {
-        recorder.stream.getTracks().forEach((track) => track.stop());
-      }
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
     }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    pcmBufferRef.current = [];
   }, []);
 
   /**
-   * 녹음 시작
+   * 녹음 시작 — AudioWorklet으로 raw PCM 캡처, AI 판단 완료 후 다음 청크 시작
    */
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream, {
-        mimeType: "audio/webm;codecs=opus",
-      });
-      mediaRecorderRef.current = recorder;
+      streamRef.current = stream;
 
-      recorder.ondataavailable = async (event) => {
-        if (event.data && event.data.size > 0) {
-          await sendAudio([event.data]);
+      const AudioCtx = window.AudioContext || /** @type {any} */ (window).webkitAudioContext;
+      const audioContext = new AudioCtx();
+      audioContextRef.current = audioContext;
+
+      const sampleRate = audioContext.sampleRate;
+      const samplesNeeded = Math.round(sampleRate * RECORDING_INTERVAL_MS / 1000);
+
+      const processorCode = `
+        class PCMProcessor extends AudioWorkletProcessor {
+          process(inputs) {
+            const ch = inputs[0]?.[0];
+            if (ch) this.port.postMessage(ch.slice());
+            return true;
+          }
+        }
+        registerProcessor('pcm-processor', PCMProcessor);
+      `;
+      const blobUrl = URL.createObjectURL(
+        new Blob([processorCode], { type: "application/javascript" })
+      );
+      await audioContext.audioWorklet.addModule(blobUrl);
+      URL.revokeObjectURL(blobUrl);
+
+      const source = audioContext.createMediaStreamSource(stream);
+      const workletNode = new AudioWorkletNode(audioContext, "pcm-processor");
+      workletNodeRef.current = workletNode;
+      source.connect(workletNode);
+
+      pcmBufferRef.current = [];
+
+      workletNode.port.onmessage = async (event) => {
+        if (isProcessingAudioRef.current) {
+          pcmBufferRef.current = [];
+          return;
+        }
+
+        pcmBufferRef.current.push(event.data);
+        const total = pcmBufferRef.current.reduce((s, c) => s + c.length, 0);
+
+        if (total >= samplesNeeded) {
+          const merged = new Float32Array(total);
+          let off = 0;
+          for (const c of pcmBufferRef.current) { merged.set(c, off); off += c.length; }
+          pcmBufferRef.current = [];
+
+          await sendAudio(merged.subarray(0, samplesNeeded), sampleRate);
         }
       };
-
-      recordingIntervalRef.current = setInterval(() => {
-        if (mediaRecorderRef.current?.state === "recording") {
-          mediaRecorderRef.current.stop();
-          mediaRecorderRef.current.start();
-        }
-      }, RECORDING_INTERVAL_MS);
-
-      recorder.start();
     } catch (err) {
       console.error("마이크 접근 오류:", err);
     }

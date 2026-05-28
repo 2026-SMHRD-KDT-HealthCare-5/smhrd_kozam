@@ -5,16 +5,16 @@ import librosa
 from pathlib import Path
 import os
 
-# snore_rf.py에서 정의된 상수들을 정의합니다.
+# snore_xgb.py 상수와 동일하게 맞춤 (3초 클립, 128×188 mel)
 SAMPLE_RATE = 16000
-CLIP_DURATION = 2.0
+CLIP_DURATION = 3.0
 EXPECTED_SAMPLES = int(SAMPLE_RATE * CLIP_DURATION)
 N_MELS = 128
 N_FFT = 1024
 HOP_LENGTH = 256
 
 class SnoreModel:
-    def __init__(self, model_path="models/snore_rf_model.joblib", label_map_path="models/label_map.json"):
+    def __init__(self, model_path="models/snore_xgb_model.joblib", label_map_path="models/label_map.json"):
         # 절대 경로로 변환하여 안정성을 확보합니다.
         base_path = Path(__file__).resolve().parent.parent
         self.model_path = base_path / model_path
@@ -56,7 +56,7 @@ class SnoreModel:
             mel_db = np.zeros_like(mel_db)
         return mel_db
 
-    def ensure_shape(self, mel: np.ndarray, target_shape=(128, 126)) -> np.ndarray:
+    def ensure_shape(self, mel: np.ndarray, target_shape=(128, 188)) -> np.ndarray:
         th, tw = target_shape
         h, w = mel.shape
         if h < th:
@@ -90,6 +90,17 @@ class SnoreModel:
         if self.model is None:
             return {"error": "Model not loaded"}
 
+        rms = float(np.sqrt(np.mean(audio_data ** 2)))
+        print(f"[DEBUG] audio shape={audio_data.shape}, rms={rms:.6f}, samples_nonzero={np.count_nonzero(audio_data)}", flush=True)
+        if rms < 0.005:
+            print(f"[DEBUG] Silent audio (rms={rms:.6f}) → returning non_snore", flush=True)
+            return {
+                "predicted": "non_snore",
+                "snore_prob": 0.0,
+                "rms": round(rms, 6),
+                "intensity": "normal",
+            }
+
         try:
             # 안전하게 오디오 피처를 추출하고 2차원으로 정렬합니다.
             feature = self.extract_feature_from_clip(audio_data).reshape(1, -1)
@@ -105,8 +116,7 @@ class SnoreModel:
                     break
             
             snore_prob = float(probs[snore_idx]) if snore_idx is not None else 0.0
-            rms = float(np.sqrt(np.mean(audio_data ** 2)))
-            
+
             # 기본 강도 및 라벨 설정
             intensity = "normal" 
             
@@ -116,11 +126,12 @@ class SnoreModel:
                 calculated_score = 0.5 * snore_prob + 0.3 * min(rms / 0.1, 1.0)
                 intensity = "high" if calculated_score > 0.4 else "low"
 
+            print(f"[DEBUG] predicted={pred_label}, snore_prob={snore_prob:.4f}, rms={rms:.6f}", flush=True)
             return {
                 "predicted": pred_label,
                 "snore_prob": round(snore_prob, 4),
                 "rms": round(rms, 6),
-                "intensity": intensity # 💡 이제 변수가 무조건 존재하므로 에러가 나지 않습니다!
+                "intensity": intensity
             }
         except Exception as e:
             return {"error": f"Internal prediction calculation error: {str(e)}"}
