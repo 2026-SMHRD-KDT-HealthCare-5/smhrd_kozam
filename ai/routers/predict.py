@@ -29,7 +29,7 @@ async def predict(audio: UploadFile = File(...)):
 
         try:
             # 오디오 로드 (sr=16000으로 리샘플링 포함)
-            y, sr = librosa.load(
+            y, sr = librosa.load( 
                 tmp_path,
                 sr=16000,
                 mono=True
