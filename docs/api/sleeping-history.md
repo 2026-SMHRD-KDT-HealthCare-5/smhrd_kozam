@@ -7,7 +7,13 @@
 ### Endpoint
 
 ```http
-GET /history/reports
+GET /api/history/reports
+```
+
+### Authorization
+
+```http
+Authorization: Bearer <accessToken>
 ```
 
 ### res
@@ -39,7 +45,13 @@ GET /history/reports
 ### Endpoint
 
 ```http
-GET /history/reports/:reportId
+GET /api/history/reports/:reportId
+```
+
+### Authorization
+
+```http
+Authorization: Bearer <accessToken>
 ```
 
 ### res

@@ -9,14 +9,11 @@ const jwt = require("jsonwebtoken");
  * @returns {Object} 로그인 성공 시 사용자 정보
  */
 exports.login = async ({ loginId, password }) => {
-  console.log("🚀 서비스 진입! DB 조회 시작 - 입력한 ID:", loginId);
-
   try {
-    // 1. DB에서 사용자 아이디로 정보 조회 (login_id 컬럼 사용)
-    const sql = "SELECT * FROM users WHERE login_id = ?";
+    // 비밀번호는 검증에만 사용하고 사용자 row 전체를 로그로 남기지 않는다.
+    const sql =
+      "SELECT idx, login_id, nick, password FROM users WHERE login_id = ?";
     const [rows] = await db.query(sql, [loginId]);
-
-    console.log("🔎 DB에서 꺼내온 데이터:", rows);
 
     // 2. 해당 아이디를 가진 사용자가 없는 경우 예외 처리
     if (rows.length === 0) {

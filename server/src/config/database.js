@@ -1,12 +1,19 @@
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "../../.env") });
 const mysql = require("mysql2");
 
 // 데이터베이스 연결 풀(Pool) 생성
 const pool = mysql.createPool({
-  host: "project-db-campus.smhrd.com",
-  port: 3312,
-  user: "cd_25K_HI5_p2_1",
-  password: "smhrd1",
-  database: "cd_25K_HI5_p2_1",
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+
+  // MySQL과 Node.js 사이의 Date 처리 기준을 UTC로 고정
+  // API 명세의 "2026-05-27T07:00:00Z" 같은 UTC 시간과 맞추기 위함
+  timezone: "Z",
+
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,

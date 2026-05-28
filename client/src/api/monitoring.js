@@ -1,41 +1,32 @@
 import apiClient from "@/utils/client";
-import { sleep } from "@/utils/common";
 
 export const createSession = async (payload) => {
-  // const response = await apiClient.post("/monitoring/sessions", payload);
-  // return response.data;
-  await sleep(2000);
-  return { success: true, data: { sessionId: 1 } };
+  const response = await apiClient.post("/monitoring/sessions", payload);
+  return response.data;
 };
 
 export const updateSession = async (sessionId, payload) => {
-  // const response = await apiClient.patch(
-  //   `/monitoring/sessions/${sessionId}/end`,
-  //   payload,
-  // );
-  // return response.data;
-  await sleep(2000);
-  return { success: true, data: { reportId: 1 } };
+  const response = await apiClient.patch(
+    `/monitoring/sessions/${sessionId}/end`,
+    payload,
+  );
+  return response.data;
 };
 
 export const createSnoreEvent = async (sessionId, payload) => {
-  // const response = await apiClient.post(
-  //   `/monitoring/sessions/${sessionId}/snore-events`,
-  //   payload,
-  // );
-  // return response.data;
-  await sleep(2000);
-  return { success: true, data: {} };
+  const response = await apiClient.post(
+    `/monitoring/sessions/${sessionId}/snore-event`,
+    payload,
+  );
+  return response.data;
 };
 
 export const createAlarmLog = async (sessionId, payload) => {
-  // const response = await apiClient.post(
-  //   `/monitoring/sessions/${sessionId}/alarms`,
-  //   payload,
-  // );
-  // return response.data;
-  await sleep(2000);
-  return { success: true, data: {} };
+  const response = await apiClient.post(
+    `/monitoring/sessions/${sessionId}/alarm`,
+    payload,
+  );
+  return response.data;
 };
 
 export const predictSnore = async (payload) => {
