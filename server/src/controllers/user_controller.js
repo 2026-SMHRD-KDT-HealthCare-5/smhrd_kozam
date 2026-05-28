@@ -8,8 +8,7 @@ const userService = require("../services/user_service");
  */
 exports.getUser = async (req, res) => {
   try {
-    //기존 req.headers['x-user-id'] 대신 미들웨어 통해 온 req.userId 사용
-    const userId = req.params.id || req.userId;
+    const userId = req.userId;
 
     if (!userId) {
       return res.status(400).json({
@@ -18,9 +17,14 @@ exports.getUser = async (req, res) => {
       });
     }
 
-    const userInfo = await userService.getUser({ userId });
+    if (String(req.params.id) !== String(userId)) {
+      return res.status(403).json({
+        success: false,
+        message: "다른 사용자의 정보에는 접근할 수 없습니다.",
+      });
+    }
 
-    console.log(`userInfo: ${JSON.stringify(userInfo)}`);
+    const userInfo = await userService.getUser({ userId });
 
     res.status(200).json({
       success: true,
