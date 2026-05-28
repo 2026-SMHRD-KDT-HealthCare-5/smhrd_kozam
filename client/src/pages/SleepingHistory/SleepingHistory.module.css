@@ -64,14 +64,14 @@ button {
 }
 
 .dateCard span {
-  color: #b16cffce;
-  font-weight: 600;
+  color: #ac7edfce;
+  font-weight: 500;
   font-size: 14px;
   /* margin-bottom: 4px; */
 }
 
 .dateCard strong {
-  margin-left: -60px;
+  margin-left: -70px;
   font-size: 16px;
   font-weight: 400;
   color: #fff;
@@ -101,7 +101,7 @@ button {
   );
   box-shadow: inset 0 1px rgba(255, 255, 255, 0.04);
   position: relative;
-  padding: 18px;
+  padding: 12px 18px;
   border-radius: 17px;
 }
 
@@ -117,8 +117,8 @@ button {
 .card h2 svg {
   color: #a55cffbe;
   /* transform: scale(1); */
-  width: 30px;
-  height: 30px;
+  width: 20px;
+  height: 20px;
 }
 
 /* 3. Timeline 컴포넌트 관련 */
@@ -217,7 +217,7 @@ button {
 
 .timelineBars .alarm {
   height: 42px;
-  color: #faf7ff;
+  color: #f0f1dd;
 }
 
 /* timelineBars 시간 폰트 설정 */
@@ -257,34 +257,43 @@ button {
   flex-shrink: 0;
   border-radius: 50%;
   background:
-    radial-gradient(circle at center, #121028 0 61%, transparent 62%),
-    conic-gradient(from -22deg, #e3b3ff 0 10%, #b85dff 10% 82%, #30204d 82% 100%);
+    radial-gradient(circle at center, #111126 0 55%, #0b0a1f 56% 100%);
   box-shadow:
-    0 14px 30px rgba(0, 0, 0, 0.25),
-    0 0 50px rgba(157, 77, 255, 0.22),
-    inset 0 1px rgba(255, 255, 255, 0.08);
+    0 16px 34px rgba(0, 0, 0, 0.34),
+    0 0 34px rgba(151, 71, 255, 0.28),
+    inset 0 0 20px rgba(8, 6, 28, 0.86);
   position: relative;
 }
 
-.scoreRing::before {
-  content: "";
+.scoreRing svg {
   position: absolute;
-  inset: 15px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.36);
-}
-
-.scoreRing::after {
-  content: "";
-  position: absolute;
-  inset: 1px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 30%);
+  inset: 0;
+  transform: rotate(-84deg);
   pointer-events: none;
 }
 
+.scoreTrack,
+.scoreArc {
+  fill: none;
+  stroke-width: 8;
+}
+
+.scoreTrack {
+  stroke: rgba(70, 45, 118, 0.34);
+}
+
+.scoreArc {
+  stroke: url("#scoreArcGradient");
+  stroke-linecap: round;
+  filter:
+    drop-shadow(0 0 4px rgba(248, 253, 119, 0.7))
+    drop-shadow(0 0 12px rgba(238, 255, 126, 0.36));
+  transition: stroke-dashoffset 0.35s ease;
+}
+
 .scoreRing strong {
+  position: relative;
+  z-index: 1;
   font-family: "MyFontGothic";
   font-size: 30px;
   font-weight: 400;
@@ -293,6 +302,8 @@ button {
 }
 
 .scoreRing span {
+  position: relative;
+  z-index: 1;
   font-family: "MyFontGothic";
   font-size: 13px;
   font-weight: 200;
@@ -414,6 +425,7 @@ button {
   height: 15px;
   margin-right: -5px;
 }
+
 /* ==========================================================================
    3. 히스토리 로우 (아이콘 및 텍스트 정렬) 수정
    ========================================================================== */

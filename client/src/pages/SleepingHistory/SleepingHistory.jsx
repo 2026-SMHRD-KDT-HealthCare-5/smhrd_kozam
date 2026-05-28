@@ -4,13 +4,13 @@ import { useParams } from "react-router-dom";
 import {
   ChevronDown,
   CalendarDays,
-  Waves,
-  Moon,
   ChevronRight,
   User,
   ShieldCheck,
 } from "lucide-react";
-import { TbMoonStars } from "react-icons/tb";
+import { BsMoonStars } from "react-icons/bs";
+
+// import
 
 import styles from "./SleepingHistory.module.css";
 import sleepingPanda from "@/assets/images/historyPanda.png";
@@ -19,6 +19,7 @@ import { getReport, getReportList } from "@/api/history";
 import { useAsync } from "@/hooks/useAsync";
 import { convertMsToTime, formatTime } from "@/utils/common";
 import ReportSelectModal from "@/components/SleepingHistory/ReportSelectModal";
+import FeedbackDetailModal from "@/components/SleepingHistory/FeedbackDetailModal";
 
 const TIMELINE_LEGEND = [
   { type: "ALARM", label: "알람 발생", class: "white" },
@@ -35,6 +36,12 @@ const formatDateKorean = (dateString) => {
 };
 
 const SleepingHistory = () => {
+
+  // date select 모달창
+  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+  // 자세한 팁 보기에 대한 모달창
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  
   const { reportId: initialReportId } = useParams();
 
   const { execute: getReportAsync } = useAsync(getReport);
@@ -42,7 +49,6 @@ const SleepingHistory = () => {
 
   const [currentReportId, setCurrentReportId] = useState(initialReportId);
   const [reportData, setReportData] = useState(null);
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   const reportListRef = useRef([]);
 
@@ -59,10 +65,9 @@ const SleepingHistory = () => {
     [getReportAsync],
   );
 
-  const handleSelectReport = (reportId) => {
-    if (!reportId) return;
-    setCurrentReportId(reportId);
-    setIsReportModalOpen(false);
+  const handleSelectDate = (date) => {
+    setSelectedDate(date);
+    setIsDateModalOpen(false);
   };
 
   useEffect(() => {
@@ -87,7 +92,7 @@ const SleepingHistory = () => {
       <section className={styles.contentStack}>
         <button
           className={styles.dateCard}
-          onClick={() => setIsReportModalOpen(true)}
+          onClick={() => setIsDateModalOpen(true)}
         >
           <span>날짜</span>
           {/* <strong>{selectedDate.label}</strong> */}
@@ -100,17 +105,29 @@ const SleepingHistory = () => {
         </button>
         <Timeline graphData={reportData?.graph} />
         <Summary summaryData={reportData?.summary} />
-        <Feedback feedbackData={reportData?.feedback} />
+        <Feedback
+          feedbackData={reportData?.feedback}
+          onOpenDetail={() => setFeedbackModalOpen(true)}
+        />
         <ProfileRows profileData={reportData?.profile} />
       </section>
+
       <ReportSelectModal
-        open={isReportModalOpen}
+        open={isDateModalOpen}
         reportList={reportListRef.current}
         selectedReportId={currentReportId}
-        onSelect={handleSelectReport}
-        onClose={() => setIsReportModalOpen(false)}
+        onSelect={(reportId) => {
+          setCurrentReportId(reportId);
+          setIsDateModalOpen(false);
+        }}
+        onClose={() => setIsDateModalOpen(false)}
       />
-      ReportSelectModal
+
+      <FeedbackDetailModal
+        open={feedbackModalOpen}
+        detail={reportData?.feedback?.detail}
+        onClose={() => setFeedbackModalOpen(false)}
+      />
     </main>
   );
 };
@@ -164,7 +181,7 @@ const Timeline = ({ graphData }) => {
   const { hour: endHour, minute: endMinute } = formatTime(graphData.endTime);
 
   return (
-    <Card title="수면/코골이 타임라인" icon={<TbMoonStars />}>
+    <Card title="수면/코골이 타임라인" icon={<BsMoonStars />}>
       <div className={styles.legend}>
         {TIMELINE_LEGEND.map((legend) => {
           return (
@@ -215,9 +232,17 @@ const Timeline = ({ graphData }) => {
 const Summary = ({ summaryData }) => {
   if (!summaryData) return;
 
-  const { score, sleepDuration, snoreCount, alarmsCount } = summaryData;
+  const { score, sleepDuration, startTime, endTime, snoreCount, alarmsCount } =
+    summaryData;
+  const normalizedScore = Math.max(0, Math.min(100, Number(score) || 0));
+  const ringRadius = 48;
+  const ringCircumference = 2 * Math.PI * ringRadius;
+  const ringOffset =
+    ringCircumference - (ringCircumference * normalizedScore) / 100;
   const { hour: durationHour, minute: durationMinute } =
     convertMsToTime(sleepDuration);
+  const { hour: startHour, minute: startMinute } = formatTime(startTime);
+  const { hour: endHour, minute: endMinute } = formatTime(endTime);
   const items = [
     ["총 수면 시간", `${durationHour}시간 ${durationMinute}분`],
     ["코골이 감지", `${snoreCount}회`],
@@ -225,10 +250,37 @@ const Summary = ({ summaryData }) => {
   ];
 
   return (
-    <Card title="한눈에 보는 수면 요약" icon={<TbMoonStars />}>
+    <Card title="한눈에 보는 수면 요약" icon={<BsMoonStars />}>
       <div className={styles.summaryGrid}>
         {/* 1. 왼쪽 점수 링 */}
         <div className={styles.scoreRing}>
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <defs>
+              <linearGradient
+                id="scoreArcGradient"
+                x1="20"
+                y1="100"
+                x2="100"
+                y2="20"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop offset="0%" stopColor="#f8fd77" />
+                <stop offset="45%" stopColor="#d7ff8a" />
+                <stop offset="100%" stopColor="#ffffff" />
+              </linearGradient>
+            </defs>
+            <circle className={styles.scoreTrack} cx="60" cy="60" r={ringRadius} />
+            <circle
+              className={styles.scoreArc}
+              cx="60"
+              cy="60"
+              r={ringRadius}
+              style={{
+                strokeDasharray: ringCircumference,
+                strokeDashoffset: ringOffset,
+              }}
+            />
+          </svg>
           <strong>{score}</strong>
           <span>점</span>
         </div>
@@ -249,19 +301,19 @@ const Summary = ({ summaryData }) => {
   );
 };
 
-const Feedback = ({ feedbackData }) => {
+const Feedback = ({ feedbackData, onOpenDetail }) => {
   if (!feedbackData) return;
 
   const { title, content, detail } = feedbackData;
 
   return (
-    <Card title="AI 수면 피드백" icon={<TbMoonStars />}>
+    <Card title="AI 수면 피드백" icon={<BsMoonStars />}>
       <div className={styles.feedbackRow}>
         <img src={sleepingPanda} alt="잠자는 판다" />
         <div>
           <h3>{title}</h3>
           <p>{content}</p>
-          <button>
+          <button type="button" onClick={onOpenDetail}>
             자세한 팁 보기 <ChevronRight />
           </button>
         </div>
