@@ -1,4 +1,40 @@
 /**
+ * Float32Array(raw PCM)를 WAV Blob으로 변환합니다.
+ * AudioWorklet에서 캡처한 무압축 PCM을 서버로 전송할 때 사용합니다.
+ */
+export const float32ArrayToWav = (samples, sampleRate) => {
+  const length = samples.length * 2 + 44;
+  const buffer = new ArrayBuffer(length);
+  const view = new DataView(buffer);
+  let pos = 0;
+
+  const writeUint16 = (v) => { view.setUint16(pos, v, true); pos += 2; };
+  const writeUint32 = (v) => { view.setUint32(pos, v, true); pos += 4; };
+
+  writeUint32(0x46464952); // "RIFF"
+  writeUint32(length - 8);
+  writeUint32(0x45564157); // "WAVE"
+  writeUint32(0x20746d66); // "fmt "
+  writeUint32(16);
+  writeUint16(1);          // PCM
+  writeUint16(1);          // mono
+  writeUint32(sampleRate);
+  writeUint32(sampleRate * 2);
+  writeUint16(2);
+  writeUint16(16);
+  writeUint32(0x61746164); // "data"
+  writeUint32(samples.length * 2);
+
+  for (let i = 0; i < samples.length; i++) {
+    const s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(pos, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    pos += 2;
+  }
+
+  return new Blob([buffer], { type: "audio/wav" });
+};
+
+/**
  * AudioBuffer를 WAV Blob으로 변환하는 유틸리티
  * AI 서버(librosa)가 ffmpeg 없이도 읽을 수 있도록 WAV 형식을 사용합니다.
  */
