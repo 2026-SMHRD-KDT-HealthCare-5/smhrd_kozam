@@ -7,7 +7,13 @@
 ### Endpoint
 
 ```http
-POST /monitoring/sessions
+POST /api/monitoring/sessions
+```
+
+### Authorization
+
+```http
+Authorization: Bearer <accessToken>
 ```
 
 ### req
@@ -34,6 +40,8 @@ POST /monitoring/sessions
 
 1. 세션 데이터 insert
 
+2. `userIdx`, 최신 `profileIdx`, `alarmCondition`은 JWT 사용자 기준으로 서버가 결정
+
 ---
 
 ## 📌 세션 종료
@@ -41,7 +49,13 @@ POST /monitoring/sessions
 ### Endpoint
 
 ```http
-PATCH /monitoring/sessions/:sessionId/end
+PATCH /api/monitoring/sessions/:sessionId/end
+```
+
+### Authorization
+
+```http
+Authorization: Bearer <accessToken>
 ```
 
 ### req
@@ -77,8 +91,8 @@ PATCH /monitoring/sessions/:sessionId/end
 {
   "title": "어떠한 수면이었어요.",
   "content": "피드백 세줄 요약",
-  "detail": "상세 피드백"
-  "score":80,
+  "detail": "상세 피드백",
+  "score": 80
 }
 ```
 
@@ -96,7 +110,13 @@ PATCH /monitoring/sessions/:sessionId/end
 ### Endpoint
 
 ```http
-POST /monitoring/sessions/:sessionId/snore-event
+POST /api/monitoring/sessions/:sessionId/snore-event
+```
+
+### Authorization
+
+```http
+Authorization: Bearer <accessToken>
 ```
 
 ### req
@@ -130,7 +150,13 @@ POST /monitoring/sessions/:sessionId/snore-event
 ### Endpoint
 
 ```http
-POST /monitoring/sessions/:sessionId/alarm
+POST /api/monitoring/sessions/:sessionId/alarm
+```
+
+### Authorization
+
+```http
+Authorization: Bearer <accessToken>
 ```
 
 ### req

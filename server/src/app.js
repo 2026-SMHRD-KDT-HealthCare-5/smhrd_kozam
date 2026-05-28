@@ -8,6 +8,7 @@ const swaggerJsdoc = require("swagger-jsdoc");
 const userRoutes = require("./routes/user_routes");
 require("dotenv").config();
 const monitoringRoutes = require("./routes/monitoring_routes"); //모니터링 라우터추가
+const historyRoutes = require("./routes/history_routes"); //히스토리 라우터 추가
 
 // ==========================================
 // 0. Swagger (스웨거) 설정 정의
@@ -25,6 +26,15 @@ const swaggerOptions = {
         url: `http://localhost:${process.env.PORT || 3000}`,
       },
     ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
   },
   // src 폴더 내부의 파일들을 스캔합니다.
   apis: ["./src/app.js", "./src/routes/*.js"],
@@ -40,14 +50,6 @@ app.use(
   }),
 );
 
-// 모니터링 라우터 추가 - 모니터링 관련된건 monitoring 들어간 파일에서 전부 처리
-app.use("/api/monitoring", monitoringRoutes);
-
-//히스토리 라우터 추가 - 히스토리 관련된건 history 들어간 파일에서 전부 처치
-const historyRoutes = require("./routes/history_routes");
-
-app.use("/history", historyRoutes);
-
 // 2. json 파싱
 app.use(express.json());
 
@@ -56,9 +58,6 @@ app.use((req, res, next) => {
   console.log(
     `\n[${new Date().toLocaleTimeString()}] 요청 도착 : ${req.method} ${req.url}`,
   );
-  if (req.body && Object.keys(req.body).length > 0) {
-    console.log("DB 확인 :", req.body);
-  }
   next();
 });
 
@@ -82,9 +81,12 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/monitoring", monitoringRoutes);
+app.use("/api/history", historyRoutes);
 
 // 6. 에러 처리 미들웨어
 app.use((err, req, res, next) => {
+  void next;
   console.error("\n[에러 발생]");
   console.error("메시지:", err.message);
   console.error("스택:", err.stack);

@@ -7,8 +7,28 @@ const aiController = require("../controllers/ai_controller");
 const upload = multer({ storage: multer.memoryStorage() });
 
 /**
- * 🎯 프론트엔드가 보낸 파일 필드명 'audio'와 일치시켜 가공한 뒤
- * 컨트롤러의 predictSnore 함수로 정상 연결합니다.
+ * @swagger
+ * /api/ai/predict:
+ *   post:
+ *     summary: 오디오 코골이 예측 요청
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required: [audio]
+ *             properties:
+ *               audio:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: 예측 완료
+ *       400:
+ *         description: 오디오 파일 누락 또는 유효하지 않음
+ *       503:
+ *         description: FastAPI 서버에 연결할 수 없음
  */
 router.post("/predict", upload.single("audio"), aiController.predictSnore);
 
