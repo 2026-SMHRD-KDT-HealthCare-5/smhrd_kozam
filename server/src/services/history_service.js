@@ -178,7 +178,7 @@ const getReportById = async (reportQueryData) => {
 
   const snoreCount = Number(report.snoreCount || 0);
   const alarmsCount = Number(report.alarmsCount || 0);
-  const score = calculateSleepScore(snoreCount, alarmsCount);
+  const score = Number(report.score || 0);
   const sleepDuration = Number(report.sleepDuration || 0);
 
   return {

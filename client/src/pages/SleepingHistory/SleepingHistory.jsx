@@ -36,12 +36,11 @@ const formatDateKorean = (dateString) => {
 };
 
 const SleepingHistory = () => {
-
   // date select 모달창
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   // 자세한 팁 보기에 대한 모달창
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
-  
+
   const { reportId: initialReportId } = useParams();
 
   const { execute: getReportAsync } = useAsync(getReport);
@@ -232,8 +231,7 @@ const Timeline = ({ graphData }) => {
 const Summary = ({ summaryData }) => {
   if (!summaryData) return;
 
-  const { score, sleepDuration, startTime, endTime, snoreCount, alarmsCount } =
-    summaryData;
+  const { score, sleepDuration, snoreCount, alarmsCount } = summaryData;
   const normalizedScore = Math.max(0, Math.min(100, Number(score) || 0));
   const ringRadius = 48;
   const ringCircumference = 2 * Math.PI * ringRadius;
@@ -241,8 +239,6 @@ const Summary = ({ summaryData }) => {
     ringCircumference - (ringCircumference * normalizedScore) / 100;
   const { hour: durationHour, minute: durationMinute } =
     convertMsToTime(sleepDuration);
-  const { hour: startHour, minute: startMinute } = formatTime(startTime);
-  const { hour: endHour, minute: endMinute } = formatTime(endTime);
   const items = [
     ["총 수면 시간", `${durationHour}시간 ${durationMinute}분`],
     ["코골이 감지", `${snoreCount}회`],
@@ -269,7 +265,12 @@ const Summary = ({ summaryData }) => {
                 <stop offset="100%" stopColor="#ffffff" />
               </linearGradient>
             </defs>
-            <circle className={styles.scoreTrack} cx="60" cy="60" r={ringRadius} />
+            <circle
+              className={styles.scoreTrack}
+              cx="60"
+              cy="60"
+              r={ringRadius}
+            />
             <circle
               className={styles.scoreArc}
               cx="60"
