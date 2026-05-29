@@ -4,6 +4,8 @@ const monitoringModel = require("../models/monitoring_model");
 const LLM_API = process.env.LLM_API_URL;
 const LLM_API_KEY = process.env.LLM_API_KEY;
 const LLM_MODEL = process.env.LLM_MODEL || "gpt-4.1-mini";
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+const genAI = new GoogleGenerativeAI(LLM_API_KEY);
 /**
  * 수면 세션 생성 서비스
  *
@@ -250,7 +252,7 @@ const buildSleepFeedbackPayload = (analysisData) => {
  * @return {Promise<Object>} LLM 피드백 응답 객체
  */
 const requestSleepFeedbackFromLLM = async (payload) => {
-  if (!LLM_API_URL || !LLM_API_KEY) {
+  if (!process.env.LLM_API_URL || !process.env.LLM_API_KEY) {
     throw new Error("LLM API 설정이 없습니다.");
   }
 
@@ -318,47 +320,41 @@ const requestSleepFeedbackFromLLM = async (payload) => {
 ${JSON.stringify(payload, null, 2)}
 `.trim();
 
-  const response = await fetch(LLM_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${LLM_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: LLM_MODEL,
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt,
-        },
-        {
-          role: "user",
-          content: userPrompt,
-        },
-      ],
-      temperature: 0.3,
-      response_format: {
-        type: "json_object",
+  try {
+    // 생성할 때 JSON 출력을 강제하는 generationConfig를 추가합니다.
+    const geminiModel = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash",
+      systemInstruction: systemPrompt,
+      generationConfig: {
+        responseMimeType: "application/json", // 💡 마크다운 없이 순수 JSON만 반환하도록 강제
+        temperature: 0.3,
       },
-    }),
-  });
+    });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("LLM API 오류:", errorText);
+    // API 호출 (타임아웃이나 네트워크 단절 시 에러 발생 가능)
+    const result = await geminiModel.generateContent(userPrompt);
+    const responseText = result.response.text();
 
-    throw new Error("LLM 피드백 생성에 실패했습니다.");
+    if (!responseText) {
+      throw new Error("Gemini API로부터 빈 응답을 받았습니다.");
+    }
+
+    // JSON 파싱 (AI가 형식을 어겼을 때를 대비)
+    return JSON.parse(responseText);
+  } catch (error) {
+    // 3. 에러 로깅 및 개발자가 인지할 수 있는 예외 처리
+    console.error("수면 피드백 생성 중 오류 발생:", error);
+
+    // 서비스 기획에 따라 에러 발생 시 사용자에게 보여줄 '기본 피드백' 객체를 반환하거나,
+    // 상위 컨트롤러로 에러를 던집니다 (여기서는 기본값 반환 예시를 듭니다).
+    return {
+      title: "수면 분석 일시 오류",
+      content:
+        "수면 데이터를 분석하는 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.",
+      detail: `불편을 드려 죄송합니다. 시스템 오류로 인해 상세 분석을 불러오지 못했습니다. (Error: ${error.message})`,
+      score: 0,
+    };
   }
-
-  const result = await response.json();
-
-  const content = result.choices?.[0]?.message?.content;
-
-  if (!content) {
-    throw new Error("LLM 피드백 응답이 비어 있습니다.");
-  }
-
-  return JSON.parse(content);
 };
 
 /**
@@ -404,6 +400,7 @@ const normalizeLLMFeedback = (feedback) => {
  * @return {Promise<Object>} 피드백 객체
  */
 const generateSleepFeedback = async (analysisData) => {
+  console.log(`analysisData: ${JSON.stringify(analysisData)}`);
   const payload = buildSleepFeedbackPayload(analysisData);
 
   const llmFeedback = await requestSleepFeedbackFromLLM(payload);
@@ -463,6 +460,7 @@ const endSession = async (sessionEndData) => {
 
   const profile = await monitoringModel.findProfileById(session.profile_idx);
 
+  console.log("test1");
   const feedback = await generateSleepFeedback({
     session: {
       ...session,
@@ -472,6 +470,7 @@ const endSession = async (sessionEndData) => {
     alarmLogs,
     profile,
   });
+  console.log("test2");
 
   const feedbackJson = JSON.stringify(feedback);
 
