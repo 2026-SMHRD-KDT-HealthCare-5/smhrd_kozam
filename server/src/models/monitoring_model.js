@@ -370,24 +370,33 @@ const findProfileById = async (profileIdx) => {
  * @return {Promise<number>} - 생성된 report ID
  */
 const insertSleepReport = async (reportData, executor = db) => {
-  const { userId, sessionIdx, feedback, height, weight, sleepingPosture } =
-    reportData;
+  const {
+    userId,
+    sessionIdx,
+    score,
+    feedback,
+    height,
+    weight,
+    sleepingPosture,
+  } = reportData;
 
   const sql = `
     INSERT INTO sleep_reports (
       user_idx,
       session_idx,
+      score,
       feedback,
       height,
       weight,
       sleeping_posture
     )
-    VALUES (?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `;
 
   const [result] = await executor.query(sql, [
     userId,
     sessionIdx,
+    score,
     feedback,
     height,
     weight,

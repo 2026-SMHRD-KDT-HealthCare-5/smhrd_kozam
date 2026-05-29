@@ -1,9 +1,7 @@
 // DB 쿼리를 직접 실행하는 MODEL 파일 불러옴
 // SERVICE는 controller와 model 사이에서 비즈니스 로직 담당
 const monitoringModel = require("../models/monitoring_model");
-const LLM_API = process.env.LLM_API_URL;
 const LLM_API_KEY = process.env.LLM_API_KEY;
-const LLM_MODEL = process.env.LLM_MODEL || "gpt-4.1-mini";
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(LLM_API_KEY);
 /**
@@ -252,7 +250,7 @@ const buildSleepFeedbackPayload = (analysisData) => {
  * @return {Promise<Object>} LLM 피드백 응답 객체
  */
 const requestSleepFeedbackFromLLM = async (payload) => {
-  if (!process.env.LLM_API_URL || !process.env.LLM_API_KEY) {
+  if (!LLM_API_KEY) {
     throw new Error("LLM API 설정이 없습니다.");
   }
 
@@ -400,7 +398,6 @@ const normalizeLLMFeedback = (feedback) => {
  * @return {Promise<Object>} 피드백 객체
  */
 const generateSleepFeedback = async (analysisData) => {
-  console.log(`analysisData: ${JSON.stringify(analysisData)}`);
   const payload = buildSleepFeedbackPayload(analysisData);
 
   const llmFeedback = await requestSleepFeedbackFromLLM(payload);
@@ -460,7 +457,6 @@ const endSession = async (sessionEndData) => {
 
   const profile = await monitoringModel.findProfileById(session.profile_idx);
 
-  console.log("test1");
   const feedback = await generateSleepFeedback({
     session: {
       ...session,
@@ -470,7 +466,6 @@ const endSession = async (sessionEndData) => {
     alarmLogs,
     profile,
   });
-  console.log("test2");
 
   const feedbackJson = JSON.stringify(feedback);
 
@@ -479,6 +474,7 @@ const endSession = async (sessionEndData) => {
     {
       userId: session.user_idx,
       sessionIdx: session.idx,
+      score: feedback.score,
       feedback: feedbackJson,
       height: profile ? profile.height : null,
       weight: profile ? profile.weight : null,

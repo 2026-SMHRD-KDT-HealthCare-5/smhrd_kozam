@@ -104,6 +104,8 @@ const findReportById = async (reportQueryData) => {
       WHERE al.session_idx = ms.idx
     ) AS alarmsCount,
 
+    sr.score AS score,
+
     sr.feedback AS feedback,
 
     sr.height AS height,
