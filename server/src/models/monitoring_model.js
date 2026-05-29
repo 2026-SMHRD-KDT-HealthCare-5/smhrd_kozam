@@ -151,8 +151,8 @@ const insertSnoreEvent = async (snoreEventData) => {
  * 실제 DB 테이블:
  * alarm_logs
  *
- * 현재 alarm_logs에는 session_idx가 없다.
- * 따라서 세션에서 가져온 user_idx를 저장한다.
+ * alarm_logs에는 session_idx 컬럼이 있으므로
+ * 알람이 발생한 세션 ID를 함께 저장한다.
  *
  * 컬럼 매핑:
  * userIdx       → user_idx
@@ -282,27 +282,22 @@ const findSnoreEventsBySessionId = async (snoreQueryData) => {
  * @return {Promise<Array>} - 알람 로그 목록
  */
 const findAlarmLogsBySessionId = async (alarmQueryData) => {
-  const { userIdx, startTime, endTime } = alarmQueryData;
+  const { sessionIdx } = alarmQueryData;
 
   const sql = `
     SELECT
       idx,
       user_idx,
+      session_idx,
       alarm_type,
       alarm_content,
       created_at
     FROM alarm_logs
-    WHERE user_idx = ?
-      AND created_at >= ?
-      AND created_at <= ?
+    WHERE session_idx = ?
     ORDER BY created_at ASC
   `;
 
-  const [rows] = await db.query(sql, [
-    userIdx,
-    new Date(startTime),
-    new Date(endTime),
-  ]);
+  const [rows] = await db.query(sql, [sessionIdx]);
 
   return rows;
 };

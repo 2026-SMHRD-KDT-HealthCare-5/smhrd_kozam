@@ -3,7 +3,7 @@
 const monitoringModel = require("../models/monitoring_model");
 const LLM_API = process.env.LLM_API_URL;
 const LLM_API_KEY = process.env.LLM_API_KEY;
-const LLM_MODEL = process.env.LLM_MODEL;
+const LLM_MODEL = process.env.LLM_MODEL || "gpt-4.1-mini";
 /**
  * 수면 세션 생성 서비스
  *
@@ -96,8 +96,11 @@ const createAlarmLog = async (alarmLogData) => {
   }
 
   await monitoringModel.insertAlarmLog({
-    ...alarmLogData,
     userIdx: session.user_idx,
+    sessionIdx: sessionId,
+    triggeredAt: alarmLogData.triggeredAt,
+    alarmType: alarmLogData.alarmType,
+    alarmContent: alarmLogData.alarmContent,
   });
 };
 
@@ -251,23 +254,62 @@ const requestSleepFeedbackFromLLM = async (payload) => {
     throw new Error("LLM API 설정이 없습니다.");
   }
 
-  const systemPrompt = `
-너는 수면 모니터링 앱의 피드백 생성 AI다.
-사용자의 수면 세션 데이터, 코골이 이벤트, 알람 로그, 프로필 정보를 바탕으로 수면 피드백을 생성한다.
+  const systemPrompt = `너는 수면 모니터링 앱의 피드백 생성 AI다.
 
-반드시 아래 JSON 형식으로만 응답해야 한다.
-마크다운, 설명문, 코드블록은 절대 포함하지 마라.
+사용자의 수면 세션 데이터, 코골이 이벤트, 알람 로그, 프로필 정보를 바탕으로 수면 점수와 코골이 개선 피드백을 생성한다.
+
+의학적 진단처럼 단정하지 말고, 앱에서 측정된 데이터 기반의 생활 습관 피드백 수준으로 작성한다.
+
+반드시 아래 감점 기준에 따라 100점 만점의 수면 점수를 계산한다.
+
+[점수 산출 기준]
+
+1. 수면 양 점수: 최대 40점
+- 기준 수면 시간은 450분이다.
+- 감점 공식: |450 - 총 수면시간(분)| × 0.1
+- 수면 양 점수 = 40 - 감점값
+- 최하점은 0점이다.
+
+2. 수면 연속성 점수: 최대 30점
+- 알람 발생 횟수 0~2회까지는 감점하지 않는다.
+- 알람 발생 횟수가 3회 이상이면 다음 공식을 적용한다.
+- 수면 연속성 점수 = 30 - (알람 횟수 - 2) × 3
+- 최하점은 0점이다.
+
+3. 수면 호흡 안정도 점수: 최대 30점
+- 체형 정보에 따라 코골이 감점 가중치를 다르게 적용한다.
+- 정상 또는 마른 체형: 30 - (코골이 횟수 × 2)
+- 과체중 또는 비만 체형: 30 - (코골이 횟수 × 3)
+- 최하점은 0점이다.
+
+4. 최종 점수
+- 최종 점수 = 수면 양 점수 + 수면 연속성 점수 + 수면 호흡 안정도 점수
+- 최종 점수는 0~100 사이의 정수로 반환한다.
+
+[피드백 작성 기준]
+
+- title은 오늘 수면 상태를 짧게 요약하는 한 문장으로 작성한다.
+- content는 핵심 감점 원인과 행동 교정 요령을 50자 이내의 한국어로 요약한다.
+- detail에는 다음 내용을 포함한다.
+  1. 수면 양 점수, 수면 연속성 점수, 수면 호흡 안정도 점수
+  2. 총 수면시간, 알람 횟수, 코골이 횟수
+  3. 체형 정보와 코골이의 관련성
+  4. 실천 가능한 코골이 개선 조언
+- detail의 줄바꿈은 반드시 \n 문자로 처리한다.
+- 친절하고 정중한 한국어 톤을 유지한다.
+
+[출력 규칙]
+
+반드시 아래 JSON 형식으로만 응답한다.
+마크다운, 코드블록, 설명문, 앞뒤 문장은 절대 포함하지 않는다.
+오직 pure JSON만 반환한다.
 
 {
-  "title": "짧은 제목",
-  "content": "사용자가 바로 이해할 수 있는 한두 문장 요약",
-  "detail": "수면 상태에 대한 구체적인 분석과 실천 가능한 조언",
-  "score": 0
-}
-
-score는 0부터 100 사이의 정수다.
-의학적 진단처럼 단정하지 말고, 앱에서 측정된 데이터 기반의 생활 습관 피드백 수준으로 작성한다.
-`.trim();
+  "title": "오늘 수면에 대한 짧은 한 줄 타이틀",
+  "content": "50자 이내의 핵심 요약 피드백",
+  "detail": "세부 점수 내역과 구체적인 분석 및 개선 조언",
+  "score": 80
+}`.trim();
 
   const userPrompt = `
 다음 수면 데이터를 분석해서 수면 피드백 JSON을 생성해줘.
@@ -416,7 +458,7 @@ const endSession = async (sessionEndData) => {
   });
 
   const alarmLogs = await monitoringModel.findAlarmLogsBySessionId({
-    sessionId,
+    sessionIdx: sessionId,
   });
 
   const profile = await monitoringModel.findProfileById(session.profile_idx);

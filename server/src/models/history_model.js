@@ -207,8 +207,6 @@ const findAlarmStampsByReportId = async (reportQueryData) => {
 
   const [rows] = await db.query(sql, [reportId, userIdx]);
 
-  const [rows] = await db.query(sql, [reportId, userIdx]);
-
   return rows;
 };
 
