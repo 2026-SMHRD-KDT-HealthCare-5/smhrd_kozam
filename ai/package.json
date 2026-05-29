@@ -1,5 +1,14 @@
 {
+  "name": "kozam-ai",
+  "version": "1.0.0",
+  "main": "ai_server.js",
+  "scripts": {
+    "start": "node ai_server.js"
+  },
   "dependencies": {
-    "form-data": "^4.0.5"
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "form-data": "^4.0.5",
+    "multer": "^2.0.0"
   }
 }

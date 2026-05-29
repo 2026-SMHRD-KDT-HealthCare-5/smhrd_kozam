@@ -46,7 +46,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 // 1. CORS 설정
 app.use(
   cors({
-    origin: `http://localhost:${process.env.CORS_PORT}`,
+    origin: `http://localhost:${process.env.CORS_PORT}`, 
   }),
 );
 
