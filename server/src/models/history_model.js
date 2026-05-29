@@ -34,7 +34,7 @@ const findReports = async (historyQueryData = {}) => {
       (
         SELECT COUNT(*)
         FROM alarm_logs al
-        WHERE al.user_idx = ms.user_idx
+        WHERE al.session_idx = ms.idx
           AND al.created_at >= ms.start_time
           AND al.created_at <= ms.end_time
       ) AS alarmsCount
@@ -195,7 +195,7 @@ const findAlarmStampsByReportId = async (reportQueryData) => {
     ON ms.idx = sr.session_idx
 
   INNER JOIN alarm_logs al
-    ON al.session_idx = sr.session_idx
+    ON al.session_idx = ms.idx
 
   WHERE sr.idx = ?
     AND sr.user_idx = ?
